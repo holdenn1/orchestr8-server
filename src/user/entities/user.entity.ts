@@ -38,6 +38,9 @@ export class User {
   })
   roles: UserRole[];
 
+  @Column({ nullable: true })
+  refreshToken: string;
+
   @OneToMany(() => Project, (project) => project.user)
   projects: Project[];
 
