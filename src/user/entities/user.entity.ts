@@ -7,10 +7,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Project } from '../../project/entities/project.entity';
-import {UserRole} from "../types/enum.user-role";
+import { UserRole } from '../types/enum.user-role';
+import { RefreshToken } from './refreshToken.entity';
 
-
-@Entity({name: 'app_user'})
+@Entity({ name: 'app_user' })
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -31,18 +31,18 @@ export class User {
   password: string;
 
   @Column({
-    type: "enum",
+    type: 'enum',
     enum: UserRole,
     array: true,
-    default: [UserRole.USER]
+    default: [UserRole.USER],
   })
   roles: UserRole[];
 
-  @Column({ nullable: true })
-  refreshToken: string;
-
   @OneToMany(() => Project, (project) => project.user)
   projects: Project[];
+
+  @OneToMany(() => RefreshToken, (token) => token.user)
+  refreshTokens: RefreshToken[];
 
   @CreateDateColumn()
   createAt: Date;

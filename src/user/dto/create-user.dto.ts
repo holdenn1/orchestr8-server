@@ -1,4 +1,4 @@
-import {IsEmail, IsString, Matches} from 'class-validator';
+import {IsEmail, Matches} from 'class-validator';
 
 export class CreateUserDto {
   @Matches(/^(?!\s)[^\s].*$/, { message: 'First name is a required field' })
@@ -15,12 +15,9 @@ export class CreateUserDto {
 
   @Matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$/, {
     message:
-      'Password is required field.\n' +
-      'Password must contain at least six characters.\n' +
+      'Password is required field.' +
+      'Password must contain at least six characters.' +
       'Password must contain a letter, a number and one special character',
   })
   password: string;
-
-  @IsString()
-  refreshToken: string;
 }

@@ -9,6 +9,7 @@ import { ProjectService } from './project/project.service';
 import { ProjectModule } from './project/project.module';
 import { User } from './user/entities/user.entity';
 import { Project } from './project/entities/project.entity';
+import {RefreshToken} from "./user/entities/refreshToken.entity";
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { Project } from './project/entities/project.entity';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [User, Project],
+        entities: [User, Project, RefreshToken],
         synchronize: true,
       }),
       inject: [ConfigService],

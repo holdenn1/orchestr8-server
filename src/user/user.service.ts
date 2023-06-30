@@ -13,15 +13,19 @@ export class UserService {
   ) {}
 
   async create(dto: CreateUserDto) {
-    const user = await this.userRepository.save(dto);
-    return user;
+    return await this.userRepository.save(dto);
   }
 
   async findAll() {
-    return this.userRepository.find();
+    return this.userRepository.find({
+      relations: {
+        projects: true,
+        refreshTokens: true,
+      },
+    });
   }
 
-  async findOne(id: number) {
+  async findOneById(id: number) {
     return await this.userRepository.findOne({
       where: { id },
     });
@@ -35,16 +39,12 @@ export class UserService {
     });
   }
 
-  async update(id: number, dto: Partial<UpdateUserDto> ) {
-    const user = await this.userRepository.findOne({ where: { id } });
-    if (user) {
-      const updatedUser = this.userRepository.merge(user, dto);
-      return await this.userRepository.save(updatedUser);
-    }
-    return undefined;
+  async update(id: number, dto: Partial<UpdateUserDto>) {
+    return await this.userRepository.update(id, dto);
   }
 
   async remove(id: number) {
-    await this.userRepository.delete(id);
+    const user = await this.findOneById(id);
+    await this.userRepository.remove(user);
   }
 }
