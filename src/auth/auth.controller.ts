@@ -1,4 +1,13 @@
-import { Controller, Post, UseGuards, Get, Body, Req } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Get,
+  Body,
+  Req,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -10,11 +19,13 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('registration')
+  @UsePipes(new ValidationPipe())
   registration(@Body() createUserDto: CreateUserDto) {
     return this.authService.registration(createUserDto);
   }
 
   @Post('login')
+  @UsePipes(new ValidationPipe())
   login(@Body() data: CreateAuthDto) {
     return this.authService.login(data);
   }
@@ -22,7 +33,6 @@ export class AuthController {
   @UseGuards(AccessTokenGuard)
   @Get('logout')
   logout(@Req() req) {
-
     this.authService.logout(req.user['sub']);
   }
 
@@ -32,10 +42,9 @@ export class AuthController {
     return req.user;
   }
 
-  @UseGuards(RefreshTokenGuard)
   @Get('refresh')
+  @UseGuards(RefreshTokenGuard)
   refreshTokens(@Req() req) {
-
     return this.authService.refreshTokens(req.user);
   }
 }

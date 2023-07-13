@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import * as argon2 from 'argon2';
@@ -14,7 +11,6 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private refreshTokenService: RefreshTokenService,
-
   ) {}
 
   async registration(createUserDto: CreateUserDto): Promise<any> {
@@ -29,6 +25,8 @@ export class AuthService {
       ...createUserDto,
       password: hash,
     });
+
+    const { password, createAt, updateAt, ...user } = newUser;
     const tokens = await this.refreshTokenService.getTokens(
       newUser.id,
       newUser.email,
@@ -38,22 +36,30 @@ export class AuthService {
       user: newUser,
       value: tokens.refreshToken,
     });
-    return tokens;
+
+    return { ...tokens, user };
   }
 
   async login(data: CreateAuthDto) {
-    const user = await this.userService.findOneByEmail(data.email);
-    if (!user) throw new BadRequestException('User does not exist');
-    const passwordMatches = await argon2.verify(user.password, data.password);
+    const findUser = await this.userService.findOneByEmail(data.email);
+    const { password, createAt, updateAt, ...user } = findUser;
+    if (!findUser) throw new BadRequestException('User does not exist');
+    const passwordMatches = await argon2.verify(
+      findUser.password,
+      data.password,
+    );
     if (!passwordMatches)
       throw new BadRequestException('Password is incorrect');
     const tokens = await this.refreshTokenService.getTokens(
-      user.id,
-      user.email,
-      user.roles,
+      findUser.id,
+      findUser.email,
+      findUser.roles,
     );
-    await this.refreshTokenService.create({ user, value: tokens.refreshToken });
-    return tokens;
+    await this.refreshTokenService.create({
+      user: findUser,
+      value: tokens.refreshToken,
+    });
+    return { ...tokens, user };
   }
 
   logout(userId: number) {

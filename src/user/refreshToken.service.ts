@@ -3,7 +3,6 @@ import { Repository } from 'typeorm';
 import { RefreshToken } from './entities/refreshToken.entity';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UserService } from './user.service';
 import { ForbiddenException } from '@nestjs/common';
 import { UserRequest } from '../auth/types';
 import { CreateTokenDto } from './dto/create-token.dto';
@@ -14,7 +13,6 @@ export class RefreshTokenService {
   constructor(
     @InjectRepository(RefreshToken)
     private refreshTokenRepository: Repository<RefreshToken>,
-    private userService: UserService,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}

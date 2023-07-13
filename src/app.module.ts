@@ -1,15 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProjectService } from './project/project.service';
 import { ProjectModule } from './project/project.module';
 import { User } from './user/entities/user.entity';
 import { Project } from './project/entities/project.entity';
-import {RefreshToken} from "./user/entities/refreshToken.entity";
+import { RefreshToken } from './user/entities/refreshToken.entity';
 
 @Module({
   imports: [
@@ -34,7 +31,7 @@ import {RefreshToken} from "./user/entities/refreshToken.entity";
     }),
     ProjectModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, ProjectService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

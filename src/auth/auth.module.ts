@@ -7,7 +7,7 @@ import { RefreshTokenStrategy } from './strategies/refreshToken.strategy';
 import { AccessTokenStrategy } from './strategies/accessToken.strategy';
 
 @Module({
-  imports: [UserModule, PassportModule,],
+  imports: [UserModule, PassportModule],
   controllers: [AuthController],
   providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
 })
