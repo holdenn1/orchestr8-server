@@ -1,25 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Req,
+  Patch,
+  Param,
+  Delete,
+  UsePipes,
+  ValidationPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-
+import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 @Controller('project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
-  @Post()
-  create(@Body() createProjectDto: CreateProjectDto) {
-    return this.projectService.create(createProjectDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.projectService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.projectService.findOne(+id);
+  @UseGuards(AccessTokenGuard)
+  @Post('create')
+  @UsePipes(new ValidationPipe())
+  create(@Body() createProjectDto: CreateProjectDto, @Req() req) {
+    return this.projectService.create(+req.user.sub, createProjectDto);
   }
 
   @Patch(':id')

@@ -25,5 +25,5 @@ export class CreateProjectDto {
       message: 'Invalid email address',
     },
   )
-  usersOnProject: string[];
+  participantsOnProject: string[];
 }

@@ -20,7 +20,7 @@ export class Project {
   descriptionProject: string;
 
   @Column('simple-array', { nullable: true })
-  usersOnProject: string[];
+  participantsOnProject: string[];
 
   @ManyToOne(() => User, (user) => user.projects)
   user: User;

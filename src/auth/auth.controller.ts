@@ -13,10 +13,14 @@ import { CreateUserDto } from '../user/dto/create-user.dto';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { AccessTokenGuard } from './guards/accessToken.guard';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
+import { UserService } from 'src/user/user.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private userService: UserService,
+  ) {}
 
   @Post('registration')
   @UsePipes(new ValidationPipe())
@@ -36,11 +40,18 @@ export class AuthController {
     this.authService.logout(req.user['sub']);
   }
 
+  @Get('all')
+  @UseGuards(AccessTokenGuard)
+  getAll() {
+    return this.userService.findAll();
+  }
+
   @Get('profile')
   @UseGuards(AccessTokenGuard)
   getProfile(@Req() req) {
-    return req.user;
+    return this.userService.findOneById(req.user.sub);
   }
+
 
   @Get('refresh')
   @UseGuards(RefreshTokenGuard)
