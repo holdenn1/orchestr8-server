@@ -23,9 +23,15 @@ export class ProjectController {
   @Post('create')
   @UsePipes(new ValidationPipe())
   create(@Body() createProjectDto: CreateProjectDto, @Req() req) {
+    console.log(req);
+    
     return this.projectService.create(+req.user.sub, createProjectDto);
   }
 
+  @Get()
+  find(){
+    return this.projectService.find()
+  }
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
     return this.projectService.update(+id, updateProjectDto);

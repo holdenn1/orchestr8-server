@@ -1,4 +1,4 @@
 export enum UserRole {
   USER = "user",
-  PROJECT_OWNER = "project_owner",
+  PROJECT_OWNER = "project owner",
 }

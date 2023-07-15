@@ -5,6 +5,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
+import { User } from 'src/user/entities/user.entity';
 
 export class CreateProjectDto {
   @IsString()
@@ -18,12 +19,5 @@ export class CreateProjectDto {
 
   @IsArray()
   @IsOptional()
-  @IsEmail(
-    {},
-    {
-      each: true,
-      message: 'Invalid email address',
-    },
-  )
-  participantsOnProject: string[];
+  members: User[];
 }

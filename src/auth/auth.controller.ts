@@ -41,7 +41,6 @@ export class AuthController {
   }
 
   @Get('all')
-  @UseGuards(AccessTokenGuard)
   getAll() {
     return this.userService.findAll();
   }

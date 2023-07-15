@@ -2,16 +2,29 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
+import { StatusProject } from '../types';
+import { Task } from './task.entity';
 
 @Entity()
 export class Project {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({
+    type: 'enum',
+    enum: StatusProject,
+    array: false,
+    default: StatusProject.IN_PROGRESS,
+  })
+  status: StatusProject;
+
 
   @Column()
   titleProject: string;
@@ -19,11 +32,14 @@ export class Project {
   @Column('text')
   descriptionProject: string;
 
-  @Column('simple-array', { nullable: true })
-  participantsOnProject: string[];
+  @ManyToOne(() => User, (user) => user.ownedProjects)
+  owner: User;
 
-  @ManyToOne(() => User, (user) => user.projects)
-  user: User;
+  @ManyToMany(() => User, (user) => user.memberProjects)
+  members: User[];
+
+  @OneToMany(() => Task, (task) => task.project)
+  tasks: Task[];
 
   @CreateDateColumn()
   createAt: Date;

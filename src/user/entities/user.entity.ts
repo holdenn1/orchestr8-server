@@ -2,6 +2,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -38,8 +40,12 @@ export class User {
   })
   roles: UserRole[];
 
-  @OneToMany(() => Project, (project) => project.user)
-  projects: Project[];
+  @OneToMany(() => Project, (project) => project.owner)
+  ownedProjects: Project[];
+
+  @ManyToMany(() => Project, (project) => project.members)
+  @JoinTable()
+  memberProjects: Project[];
 
   @OneToMany(() => RefreshToken, (token) => token.user)
   refreshTokens: RefreshToken[];

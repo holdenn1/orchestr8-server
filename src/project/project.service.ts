@@ -16,18 +16,26 @@ export class ProjectService {
 
   async create(
     userId: number,
-    {
-      titleProject,
-      descriptionProject,
-      participantsOnProject,
-    }: CreateProjectDto,
+    { titleProject, descriptionProject, members }: CreateProjectDto,
   ) {
+    console.log(members);
+    
     const user = await this.userService.findOneById(userId);
     return await this.projectRepository.save({
-      user,
       titleProject,
       descriptionProject,
-      participantsOnProject,
+      members,
+      owner: user,
+    });
+  }
+
+  async find() {
+    return await this.projectRepository.find({
+      relations: {
+        owner: true,
+        members: true,
+        tasks: true,
+      },
     });
   }
 

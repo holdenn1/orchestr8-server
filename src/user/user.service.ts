@@ -19,7 +19,8 @@ export class UserService {
   async findAll() {
     return this.userRepository.find({
       relations: {
-        projects: true,
+        ownedProjects: true,
+        memberProjects: true,
         refreshTokens: true,
       },
     });
