@@ -5,6 +5,7 @@ import * as argon2 from 'argon2';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { RefreshTokenService } from '../user/refreshToken.service';
 import { UserRequest } from './types';
+import { mapToUserProfile } from './mapers';
 
 @Injectable()
 export class AuthService {
@@ -25,8 +26,6 @@ export class AuthService {
       ...createUserDto,
       password: hash,
     });
-
-    const { password, createAt, updateAt, ...user } = newUser;
     const tokens = await this.refreshTokenService.getTokens(
       newUser.id,
       newUser.email,
@@ -36,13 +35,11 @@ export class AuthService {
       user: newUser,
       value: tokens.refreshToken,
     });
-
-    return { ...tokens, user };
+    return { ...tokens, user: mapToUserProfile(newUser) };
   }
 
   async login(data: CreateAuthDto) {
     const findUser = await this.userService.findOneByEmail(data.email);
-    const { password, createAt, updateAt, ...user } = findUser;
     if (!findUser) throw new BadRequestException('User does not exist');
     const passwordMatches = await argon2.verify(
       findUser.password,
@@ -59,7 +56,7 @@ export class AuthService {
       user: findUser,
       value: tokens.refreshToken,
     });
-    return { ...tokens, user };
+    return { ...tokens, user: mapToUserProfile(findUser) };
   }
 
   logout(userId: number) {

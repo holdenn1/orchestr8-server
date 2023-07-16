@@ -22,16 +22,15 @@ export class ProjectController {
   @UseGuards(AccessTokenGuard)
   @Post('create')
   @UsePipes(new ValidationPipe())
-  create(@Body() createProjectDto: CreateProjectDto, @Req() req) {
-    console.log(req);
-    
+  create(@Body() createProjectDto: CreateProjectDto, @Req() req) {  
     return this.projectService.create(+req.user.sub, createProjectDto);
   }
 
   @Get()
-  find(){
+  findAll(){
     return this.projectService.find()
   }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
     return this.projectService.update(+id, updateProjectDto);

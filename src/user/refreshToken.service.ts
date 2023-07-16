@@ -66,9 +66,6 @@ export class RefreshTokenService {
     ]);
 
     return {
-      userId,
-      email,
-      roles,
       accessToken,
       refreshToken,
     };

@@ -1,11 +1,9 @@
 import {
   IsArray,
-  IsEmail,
   IsOptional,
   IsString,
   MaxLength,
 } from 'class-validator';
-import { User } from 'src/user/entities/user.entity';
 
 export class CreateProjectDto {
   @IsString()
@@ -19,5 +17,5 @@ export class CreateProjectDto {
 
   @IsArray()
   @IsOptional()
-  members: User[];
+  membersIds: number[];
 }

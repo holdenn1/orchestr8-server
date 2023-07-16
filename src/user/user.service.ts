@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -24,6 +24,10 @@ export class UserService {
         refreshTokens: true,
       },
     });
+  }
+
+  async findAllByIds(membersIds: number[]) {
+    return await this.userRepository.find({ where: { id: In(membersIds) } });
   }
 
   async findOneById(id: number) {
