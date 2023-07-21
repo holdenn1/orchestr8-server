@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository, In } from 'typeorm';
+import { Repository, In, ILike } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { mapToProjectMembers } from 'src/project/mapers';
 
 @Injectable()
 export class UserService {
@@ -51,5 +52,10 @@ export class UserService {
   async remove(id: number) {
     const user = await this.findOneById(id);
     await this.userRepository.remove(user);
+  }
+
+  async searchUsersByEmail(searchEmail: string) {
+    const users = await this.userRepository.find({ where: { email: ILike(`%${searchEmail}%`) } });
+    return mapToProjectMembers(users)
   }
 }

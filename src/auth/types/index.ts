@@ -16,6 +16,7 @@ export type UserProfile = {
   id: number;
   firstName: string;
   lastName: string;
+  photo: string;
   phone: string;
   email: string;
   roles: UserRole[];

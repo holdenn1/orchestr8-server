@@ -23,6 +23,9 @@ export class User {
   @Column()
   lastName: string;
 
+  @Column({ nullable: true })
+  photo: string;
+
   @Column()
   phone: string;
 

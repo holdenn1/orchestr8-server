@@ -5,8 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './entities/project.entity';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
-import { mapToProjectOwner } from './mapers/mapToProjectOwner';
-import { mapToProjectMember } from './mapers/mapToProjectMember';
+import { mapToProjectOwner, mapToProjectMembers, mapToProject } from './mapers';
 
 @Injectable()
 export class ProjectService {
@@ -19,13 +18,13 @@ export class ProjectService {
   async create(userId: number, { titleProject, descriptionProject, membersIds }: CreateProjectDto) {
     const user = await this.userService.findOneById(userId);
     const getMembers = membersIds ? await this.userService.findAllByIds(membersIds) : [];
-
-    return await this.projectRepository.save({
+    const project = await this.projectRepository.save({
       titleProject,
       descriptionProject,
-      members: mapToProjectMember(getMembers),
+      members: mapToProjectMembers(getMembers),
       owner: mapToProjectOwner(user),
     });
+    return mapToProject(project);
   }
 
   async find() {
@@ -47,11 +46,15 @@ export class ProjectService {
     project.titleProject = dto.titleProject ?? project.titleProject;
     project.descriptionProject = dto.descriptionProject ?? project.descriptionProject;
     project.members = dto.membersIds ? await this.userService.findAllByIds(dto.membersIds) : project.members;
-    return this.projectRepository.save({ ...project, members: mapToProjectMember(project.members) });
+    return this.projectRepository.save({ ...project, members: mapToProjectMembers(project.members) });
   }
 
   async remove(id: number) {
     const project = await this.findOneById(id);
     return await this.projectRepository.remove(project);
+  }
+
+  async searchMembers(searchEmail: string) {
+    return await this.userService.searchUsersByEmail(searchEmail);
   }
 }

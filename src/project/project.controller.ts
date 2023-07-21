@@ -10,6 +10,7 @@ import {
   UsePipes,
   ValidationPipe,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -22,13 +23,13 @@ export class ProjectController {
   @UseGuards(AccessTokenGuard)
   @Post('create')
   @UsePipes(new ValidationPipe())
-  create(@Body() createProjectDto: CreateProjectDto, @Req() req) {  
+  create(@Body() createProjectDto: CreateProjectDto, @Req() req) {
     return this.projectService.create(+req.user.sub, createProjectDto);
   }
 
   @Get()
-  findAll(){
-    return this.projectService.find()
+  findAll() {
+    return this.projectService.find();
   }
 
   @Patch(':id')
@@ -39,5 +40,11 @@ export class ProjectController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.projectService.remove(+id);
+  }
+
+  @Get('members')
+  @UseGuards(AccessTokenGuard)
+  searchMembers(@Query('searchText') searcText: string) {
+    return this.projectService.searchMembers(searcText);
   }
 }

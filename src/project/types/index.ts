@@ -1,4 +1,6 @@
+import { type } from 'os';
 import { UserRole } from 'src/user/types/enum.user-role';
+import { Project } from '../entities/project.entity';
 
 export enum StatusProject {
   COMPLETED = 'Completed',
@@ -16,4 +18,6 @@ export type ProjectOwner = {
   roles: UserRole[];
 };
 
-export type MemberProject = ProjectOwner
+export type MemberProject = ProjectOwner;
+
+export type ProjectPublick = Omit<Project, 'createAt' | 'updateAt'>;
