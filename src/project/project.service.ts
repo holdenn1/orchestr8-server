@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './entities/project.entity';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
-import { mapToProjectOwner, mapToProjectMembers, mapToProject } from './mapers';
+import { mapToProjectOwner, mapToProjectMembers, mapToProject, mapToProjects } from './mapers';
 
 @Injectable()
 export class ProjectService {
@@ -54,7 +54,23 @@ export class ProjectService {
     return await this.projectRepository.remove(project);
   }
 
-  async searchMembers(searchEmail: string) {
-    return await this.userService.searchUsersByEmail(searchEmail);
+  async searchMembers(searchEmail: string, userId: number) {
+    return await this.userService.searchUsersByEmail(searchEmail, userId);
+  }
+
+  async getOwnProject(userId: number) {
+    const project = await this.projectRepository.find({
+      where: {
+        owner: {
+          id: userId,
+        },
+      },
+      relations: {
+        owner: true,
+        members: true,
+        tasks: true,
+      },
+    });
+    return mapToProjects(project);
   }
 }

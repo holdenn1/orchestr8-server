@@ -20,8 +20,8 @@ import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
-  @UseGuards(AccessTokenGuard)
   @Post('create')
+  @UseGuards(AccessTokenGuard)
   @UsePipes(new ValidationPipe())
   create(@Body() createProjectDto: CreateProjectDto, @Req() req) {
     return this.projectService.create(+req.user.sub, createProjectDto);
@@ -44,7 +44,13 @@ export class ProjectController {
 
   @Get('members')
   @UseGuards(AccessTokenGuard)
-  searchMembers(@Query('searchText') searcText: string) {
-    return this.projectService.searchMembers(searcText);
+  searchMembers(@Query('searchText') searcText: string, @Req() req) {
+    return this.projectService.searchMembers(searcText, req.user.sub);
+  }
+
+  @Get('owned-projects')
+  @UseGuards(AccessTokenGuard)
+  getOwnProjects(@Req() req) {
+    return this.projectService.getOwnProject(req.user.sub);
   }
 }

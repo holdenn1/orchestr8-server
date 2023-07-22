@@ -30,3 +30,14 @@ export const mapToProject = (project: Project): ProjectPublick => ({
   owner: project.owner,
   members: project.members,
 });
+
+export const mapToProjects = (project: Project[]): ProjectPublick[] =>
+  project.map((project) => ({
+    id: project.id,
+    status: project.status,
+    titleProject: project.titleProject,
+    descriptionProject: project.descriptionProject,
+    tasks: project.tasks,
+    owner: project.owner,
+    members: project.members,
+  }));

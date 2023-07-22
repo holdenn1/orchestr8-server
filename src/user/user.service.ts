@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository, In, ILike } from 'typeorm';
+import { Repository, In, ILike, And, Not } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { mapToProjectMembers } from 'src/project/mapers';
 
@@ -54,8 +54,11 @@ export class UserService {
     await this.userRepository.remove(user);
   }
 
-  async searchUsersByEmail(searchEmail: string) {
-    const users = await this.userRepository.find({ where: { email: ILike(`%${searchEmail}%`) } });
-    return mapToProjectMembers(users)
+  async searchUsersByEmail(searchEmail: string, userId: number) {
+    const users = await this.userRepository.find({
+      where: { email: ILike(`%${searchEmail}%`), id: Not(userId) },
+      take: 10,
+    });
+    return mapToProjectMembers(users);
   }
 }
