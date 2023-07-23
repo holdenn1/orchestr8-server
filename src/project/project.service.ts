@@ -15,12 +15,12 @@ export class ProjectService {
     private userService: UserService,
   ) {}
 
-  async create(userId: number, { titleProject, descriptionProject, membersIds }: CreateProjectDto) {
+  async create(userId: number, { title, description, membersIds }: CreateProjectDto) {
     const user = await this.userService.findOneById(userId);
     const getMembers = membersIds ? await this.userService.findAllByIds(membersIds) : [];
     const project = await this.projectRepository.save({
-      titleProject,
-      descriptionProject,
+      title,
+      description,
       members: mapToProjectMembers(getMembers),
       owner: mapToProjectOwner(user),
     });
@@ -43,8 +43,8 @@ export class ProjectService {
 
   async update(id: number, dto: Partial<UpdateProjectDto>) {
     const project = await this.findOneById(id);
-    project.titleProject = dto.titleProject ?? project.titleProject;
-    project.descriptionProject = dto.descriptionProject ?? project.descriptionProject;
+    project.title = dto.title ?? project.title;
+    project.description = dto.description ?? project.description;
     project.members = dto.membersIds ? await this.userService.findAllByIds(dto.membersIds) : project.members;
     return this.projectRepository.save({ ...project, members: mapToProjectMembers(project.members) });
   }

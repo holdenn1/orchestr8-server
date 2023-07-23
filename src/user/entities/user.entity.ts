@@ -26,10 +26,10 @@ export class User {
   @Column({ nullable: true })
   photo: string;
 
-  @Column()
+  @Column({unique: true})
   phone: string;
 
-  @Column()
+  @Column({unique: true})
   email: string;
 
   @Column()

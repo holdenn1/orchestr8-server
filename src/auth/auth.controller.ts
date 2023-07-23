@@ -57,4 +57,11 @@ export class AuthController {
   refreshTokens(@Req() req) {
     return this.authService.refreshTokens(req.user);
   }
+
+  @Get('refresh-login')
+  @UseGuards(RefreshTokenGuard)
+  refreshTokensLogin(@Req() req) {
+    return this.authService.refreshTokensLogin(req.user);
+  }
+
 }

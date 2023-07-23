@@ -9,15 +9,10 @@ import { mapToUserProfile } from './mapers';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private userService: UserService,
-    private refreshTokenService: RefreshTokenService,
-  ) {}
+  constructor(private userService: UserService, private refreshTokenService: RefreshTokenService) {}
 
   async registration(createUserDto: CreateUserDto): Promise<any> {
-    const userExists = await this.userService.findOneByEmail(
-      createUserDto.email,
-    );
+    const userExists = await this.userService.findOneByEmail(createUserDto.email);
     if (userExists) {
       throw new BadRequestException('User already exists');
     }
@@ -26,11 +21,7 @@ export class AuthService {
       ...createUserDto,
       password: hash,
     });
-    const tokens = await this.refreshTokenService.getTokens(
-      newUser.id,
-      newUser.email,
-      newUser.roles,
-    );
+    const tokens = await this.refreshTokenService.getTokens(newUser.id, newUser.email, newUser.roles);
     await this.refreshTokenService.create({
       user: newUser,
       value: tokens.refreshToken,
@@ -41,17 +32,9 @@ export class AuthService {
   async login(data: CreateAuthDto) {
     const findUser = await this.userService.findOneByEmail(data.email);
     if (!findUser) throw new BadRequestException('User does not exist');
-    const passwordMatches = await argon2.verify(
-      findUser.password,
-      data.password,
-    );
-    if (!passwordMatches)
-      throw new BadRequestException('Password is incorrect');
-    const tokens = await this.refreshTokenService.getTokens(
-      findUser.id,
-      findUser.email,
-      findUser.roles,
-    );
+    const passwordMatches = await argon2.verify(findUser.password, data.password);
+    if (!passwordMatches) throw new BadRequestException('Password is incorrect');
+    const tokens = await this.refreshTokenService.getTokens(findUser.id, findUser.email, findUser.roles);
     await this.refreshTokenService.create({
       user: findUser,
       value: tokens.refreshToken,
@@ -65,5 +48,12 @@ export class AuthService {
 
   async refreshTokens(user: UserRequest) {
     return this.refreshTokenService.refreshTokens(user);
+  }
+
+  async refreshTokensLogin(userData: UserRequest) {
+    const finstUser = await this.userService.findOneById(userData.sub);
+    const tokens = await this.refreshTokens(userData);
+    const user = mapToUserProfile(finstUser);
+    return { user, tokens };
   }
 }

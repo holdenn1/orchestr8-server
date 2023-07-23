@@ -27,10 +27,10 @@ export class Project {
 
 
   @Column()
-  titleProject: string;
+  title: string;
 
   @Column('text')
-  descriptionProject: string;
+  description: string;
 
   @ManyToOne(() => User, (user) => user.ownedProjects)
   owner: User;

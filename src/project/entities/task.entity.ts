@@ -7,7 +7,7 @@ export class Task {
   id: number;
 
   @Column('text')
-  taskText: string;
+  task: string;
 
   @Column('boolean', { default: false })
   completed: boolean;

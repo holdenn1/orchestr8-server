@@ -10,10 +10,10 @@ export class CreateProjectDto {
   @MaxLength(255, {
     message: 'Title is too long',
   })
-  titleProject: string;
+  title: string;
 
   @IsString()
-  descriptionProject: string;
+  description: string;
 
   @IsArray()
   @IsOptional()
