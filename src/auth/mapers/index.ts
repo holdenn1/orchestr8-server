@@ -10,5 +10,4 @@ export const mapToUserProfile = (user: User): UserProfile => ({
   phone: user.phone,
   roles: user.roles,
   memberProjects: user.memberProjects ?? [],
-  ownedProjects: user.ownedProjects ?? [],
 });

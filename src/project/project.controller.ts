@@ -16,6 +16,7 @@ import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
+import { StatusProject } from './types';
 @Controller('project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
@@ -33,11 +34,13 @@ export class ProjectController {
   }
 
   @Patch(':id')
+  @UseGuards(AccessTokenGuard)
   update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
-    return this.projectService.update(+id, updateProjectDto);
+    return this.projectService.updateProject(+id, updateProjectDto);
   }
 
   @Delete(':id')
+  @UseGuards(AccessTokenGuard)
   remove(@Param('id') id: string) {
     return this.projectService.remove(+id);
   }
@@ -48,9 +51,18 @@ export class ProjectController {
     return this.projectService.searchMembers(searcText, req.user.sub);
   }
 
-  @Get('owned-projects')
+  
+  @Get('own-projects/:status')
   @UseGuards(AccessTokenGuard)
-  getOwnProjects(@Req() req) {
-    return this.projectService.getOwnProject(req.user.sub);
+  getOwnProjects(@Req() req, @Param('status') status: StatusProject) {    
+    return this.projectService.getOwnProjects(req.user.sub, status);
   }
+
+  @Get('project-count')
+  @UseGuards(AccessTokenGuard)
+  getProjectCountsByStatus(@Req() req,) {    
+    return this.projectService.getProjectCountsByStatus(req.user.sub);
+  }
+
+
 }

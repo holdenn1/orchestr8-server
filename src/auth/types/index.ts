@@ -20,6 +20,5 @@ export type UserProfile = {
   phone: string;
   email: string;
   roles: UserRole[];
-  ownedProjects: Project[];
   memberProjects: Project[];
 };

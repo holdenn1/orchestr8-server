@@ -37,8 +37,8 @@ export class UserService {
       relations: {
         ownedProjects: true,
         memberProjects: true,
-        refreshTokens: true
-      }
+        refreshTokens: true,
+      },
     });
   }
 
@@ -46,6 +46,11 @@ export class UserService {
     return await this.userRepository.findOne({
       where: {
         email: email,
+      },
+      relations: {
+        ownedProjects: true,
+        memberProjects: true,
+        refreshTokens: true,
       },
     });
   }

@@ -1,9 +1,5 @@
-import {
-  IsArray,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { IsArray, IsOptional, IsString, MaxLength } from 'class-validator';
+import { StatusProject } from '../types';
 
 export class CreateProjectDto {
   @IsString()
@@ -14,6 +10,10 @@ export class CreateProjectDto {
 
   @IsString()
   description: string;
+
+  @IsString()
+  @IsOptional()
+  status: StatusProject;
 
   @IsArray()
   @IsOptional()
