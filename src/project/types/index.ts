@@ -1,5 +1,5 @@
+import { Task } from 'src/task/entities/task.entity';
 import { UserRole } from 'src/user/types/enum.user-role';
-import { Task } from '../entities/task.entity';
 
 export enum StatusProject {
   COMPLETED = 'completed',

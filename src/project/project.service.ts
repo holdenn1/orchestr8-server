@@ -39,7 +39,10 @@ export class ProjectService {
   }
 
   async findOneById(id: number) {
-    return await this.projectRepository.findOne({ where: { id }, relations: { members: true, owner: true } });
+    return await this.projectRepository.findOne({
+      where: { id },
+      relations: { members: true, owner: true, tasks: true },
+    });
   }
 
   async updateProject(id: number, dto: Partial<UpdateProjectDto>) {

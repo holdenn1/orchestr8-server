@@ -7,7 +7,8 @@ import { ProjectModule } from './project/project.module';
 import { User } from './user/entities/user.entity';
 import { Project } from './project/entities/project.entity';
 import { RefreshToken } from './user/entities/refreshToken.entity';
-import { Task } from './project/entities/task.entity';
+import { Task } from './task/entities/task.entity';
+import { TaskModule } from './task/task.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { Task } from './project/entities/task.entity';
       inject: [ConfigService],
     }),
     ProjectModule,
+    TaskModule
   ],
   controllers: [],
   providers: [],

@@ -1,5 +1,5 @@
+import { Project } from 'src/project/entities/project.entity';
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { Project } from './project.entity';
 
 @Entity()
 export class Task {

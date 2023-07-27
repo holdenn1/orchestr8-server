@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { StatusProject } from '../types';
-import { Task } from './task.entity';
+import { Task } from 'src/task/entities/task.entity';
 
 @Entity()
 export class Project {
