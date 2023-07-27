@@ -28,12 +28,17 @@ export class ProjectService {
     return mapToProject(project);
   }
 
-  async find() {
+  async findAllProjectsByUser(userId: number) {
     return await this.projectRepository.find({
       relations: {
         owner: true,
         members: true,
         tasks: true,
+      },
+      where: {
+        owner: {
+          id: userId,
+        },
       },
     });
   }
@@ -65,31 +70,20 @@ export class ProjectService {
 
   async getOwnProjects(userId: number, status: StatusProject) {
     if (status === StatusProject.ALL) {
+      const findProjects = await this.findAllProjectsByUser(userId);
+      return mapToProjects(findProjects);
+    } else {
       const findProjects = await this.projectRepository.find({
-        where: {
-          owner: {
-            id: userId,
-          },
-        },
         relations: {
           owner: true,
           members: true,
           tasks: true,
         },
-      });
-      return mapToProjects(findProjects);
-    } else {
-      const findProjects = await this.projectRepository.find({
         where: {
           owner: {
             id: userId,
           },
           status,
-        },
-        relations: {
-          owner: true,
-          members: true,
-          tasks: true,
         },
       });
       return mapToProjects(findProjects);

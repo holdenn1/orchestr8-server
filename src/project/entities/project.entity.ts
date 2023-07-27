@@ -25,7 +25,6 @@ export class Project {
   })
   status: StatusProject;
 
-
   @Column()
   title: string;
 
@@ -38,7 +37,7 @@ export class Project {
   @ManyToMany(() => User, (user) => user.memberProjects)
   members: User[];
 
-  @OneToMany(() => Task, (task) => task.project)
+  @OneToMany(() => Task, (task) => task.project, { onDelete: 'CASCADE' })
   tasks: Task[];
 
   @CreateDateColumn()

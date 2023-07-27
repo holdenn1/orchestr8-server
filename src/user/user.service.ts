@@ -33,24 +33,24 @@ export class UserService {
 
   async findOneById(id: number) {
     return await this.userRepository.findOne({
-      where: { id },
       relations: {
         ownedProjects: true,
         memberProjects: true,
         refreshTokens: true,
       },
+      where: { id },
     });
   }
 
   async findOneByEmail(email: string) {
     return await this.userRepository.findOne({
-      where: {
-        email: email,
-      },
       relations: {
         ownedProjects: true,
         memberProjects: true,
         refreshTokens: true,
+      },
+      where: {
+        email: email,
       },
     });
   }

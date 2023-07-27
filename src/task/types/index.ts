@@ -5,3 +5,8 @@ export type TaskToProfile = {
   createAt: Date;
   updateAt: Date;
 };
+
+export enum StatusTask {
+  ALL = 'all-tasks',
+  COMPLETED = 'completed'
+}

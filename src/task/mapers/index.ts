@@ -15,3 +15,13 @@ export const mapTaskToProfile = ({
   createAt,
   updateAt,
 });
+
+export const mapTasksToProfile = (tasks: Task[]): TaskToProfile[] => {
+  return tasks.map((task) => ({
+    id: task.id,
+    completed: task.completed,
+    task: task.task,
+    createAt: task.createAt,
+    updateAt: task.updateAt,
+  }));
+};

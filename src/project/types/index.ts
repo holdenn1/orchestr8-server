@@ -32,8 +32,4 @@ export type ProjectPublick = {
   owner: ProjectOwner;
 
   members: MemberProject[];
-
-  tasks: Task[];
 };
-
-

@@ -17,6 +17,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { StatusProject } from './types';
+import { mapToProject } from './mapers';
 @Controller('project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
@@ -26,11 +27,6 @@ export class ProjectController {
   @UsePipes(new ValidationPipe())
   create(@Body() createProjectDto: CreateProjectDto, @Req() req) {
     return this.projectService.create(+req.user.sub, createProjectDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.projectService.find();
   }
 
   @Patch(':id')
@@ -51,18 +47,15 @@ export class ProjectController {
     return this.projectService.searchMembers(searcText, req.user.sub);
   }
 
-  
   @Get('own-projects/:status')
   @UseGuards(AccessTokenGuard)
-  getOwnProjects(@Req() req, @Param('status') status: StatusProject) {    
+  getOwnProjects(@Req() req, @Param('status') status: StatusProject) {
     return this.projectService.getOwnProjects(req.user.sub, status);
   }
 
   @Get('project-count')
   @UseGuards(AccessTokenGuard)
-  getProjectCountsByStatus(@Req() req,) {    
+  getProjectCountsByStatus(@Req() req) {
     return this.projectService.getProjectCountsByStatus(req.user.sub);
   }
-
-
 }

@@ -4,7 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './entities/task.entity';
 import { Repository } from 'typeorm';
 import { ProjectService } from 'src/project/project.service';
-import { mapTaskToProfile } from './mapers';
+import { mapTaskToProfile, mapTasksToProfile } from './mapers';
+import { StatusTask } from './types';
 
 @Injectable()
 export class TaskService {
@@ -22,6 +23,39 @@ export class TaskService {
         project,
       });
       return mapTaskToProfile(createdTask);
+    }
+  }
+
+  async findAllTasksByUser(projectId: number) {
+    return await this.taskRepositoty.find({
+      relations: {
+        project: true,
+      },
+      where: {
+        project: {
+          id: projectId,
+        },
+      },
+    });
+  }
+
+  async getTasks(projectId: number, status: StatusTask) {
+    if (status === StatusTask.ALL) {
+      const findTasks = await this.findAllTasksByUser(projectId);
+      return mapTasksToProfile(findTasks);
+    } else if (status === StatusTask.COMPLETED) {
+      const findTasks = await this.taskRepositoty.find({
+        relations: {
+          project: true,
+        },
+        where: {
+          project: {
+            id: projectId,
+          },
+          completed: true,
+        },
+      });
+      return mapTasksToProfile(findTasks);
     }
   }
 }
