@@ -40,6 +40,9 @@ export class ProjectService {
           id: userId,
         },
       },
+      order: {
+        createAt: 'ASC',
+      },
     });
   }
 
@@ -84,6 +87,9 @@ export class ProjectService {
             id: userId,
           },
           status,
+        },
+        order: {
+          createAt: 'ASC',
         },
       });
       return mapToProjects(findProjects);

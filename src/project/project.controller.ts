@@ -43,8 +43,8 @@ export class ProjectController {
 
   @Get('members')
   @UseGuards(AccessTokenGuard)
-  searchMembers(@Query('searchText') searcText: string, @Req() req) {
-    return this.projectService.searchMembers(searcText, req.user.sub);
+  searchMembers(@Query('searchText') searchText: string, @Req() req) {
+    return this.projectService.searchMembers(searchText, req.user.sub);
   }
 
   @Get('own-projects/:status')
