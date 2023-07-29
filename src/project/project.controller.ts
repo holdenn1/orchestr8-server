@@ -17,7 +17,6 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { StatusProject } from './types';
-import { mapToProject } from './mapers';
 @Controller('project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}

@@ -79,4 +79,16 @@ export class TaskService {
     const task = await this.findOneById(id);
     return await this.taskRepository.remove(task);
   }
+
+  async getTasksCountsByStatus(projectId: number) {
+    const result = await this.taskRepository
+      .createQueryBuilder('task')
+      .select('COUNT(*)', 'totalCount')
+      .addSelect('SUM(CASE WHEN task.completed = true THEN 1 ELSE 0 END)', 'completed')
+      .leftJoin('task.project', 'project')
+      .where('project.id = :projectId', { projectId })
+      .groupBy('project.id')
+      .getRawMany();
+    return result;
+  }
 }

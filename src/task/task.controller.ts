@@ -44,4 +44,10 @@ export class TaskController {
   remove(@Param('id') id: string) {
     return this.taskService.remove(+id);
   }
+
+  @Get('tasks/count/:projectId')
+  @UseGuards(AccessTokenGuard)
+  getTasksCountsByStatus(@Param('projectId') projectId: string) {
+    return this.taskService.getTasksCountsByStatus(+projectId);
+  }
 }
