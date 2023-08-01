@@ -1,5 +1,12 @@
 import { Project } from 'src/project/entities/project.entity';
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class Task {
@@ -12,7 +19,7 @@ export class Task {
   @Column('boolean', { default: false })
   completed: boolean;
 
-  @ManyToOne(() => Project, (project) => project.tasks)
+  @ManyToOne(() => Project, (project) => project.tasks, { onDelete: 'CASCADE' })
   project: Project;
 
   @CreateDateColumn()

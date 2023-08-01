@@ -37,7 +37,7 @@ export class Project {
   @ManyToMany(() => User, (user) => user.memberProjects)
   members: User[];
 
-  @OneToMany(() => Task, (task) => task.project, { onDelete: 'CASCADE' })
+  @OneToMany(() => Task, (task) => task.project,)
   tasks: Task[];
 
   @CreateDateColumn()

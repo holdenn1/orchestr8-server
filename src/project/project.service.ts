@@ -28,31 +28,6 @@ export class ProjectService {
     return mapToProject(project);
   }
 
-  async findAllProjectsByUser(userId: number) {
-    return await this.projectRepository.find({
-      relations: {
-        owner: true,
-        members: true,
-        tasks: true,
-      },
-      where: {
-        owner: {
-          id: userId,
-        },
-      },
-      order: {
-        createAt: 'ASC',
-      },
-    });
-  }
-
-  async findOneById(id: number) {
-    return await this.projectRepository.findOne({
-      where: { id },
-      relations: { members: true, owner: true, tasks: true },
-    });
-  }
-
   async updateProject(id: number, dto: Partial<UpdateProjectDto>) {
     const project = await this.findOneById(id);
     project.title = dto.title ?? project.title;
@@ -71,9 +46,36 @@ export class ProjectService {
     return await this.userService.searchUsersByEmail(searchEmail, userId);
   }
 
+  async findOneById(id: number) {
+    return await this.projectRepository.findOne({
+      where: { id },
+      relations: { members: true, owner: true, tasks: true },
+    });
+  }
+
+  /* find own projects */
+
+  async findAllOwnProjectsByUser(userId: number) {
+    return await this.projectRepository.find({
+      relations: {
+        owner: true,
+        members: true,
+        tasks: true,
+      },
+      where: {
+        owner: {
+          id: userId,
+        },
+      },
+      order: {
+        createAt: 'ASC',
+      },
+    });
+  }
+
   async getOwnProjects(userId: number, status: StatusProject) {
     if (status === StatusProject.ALL) {
-      const findProjects = await this.findAllProjectsByUser(userId);
+      const findProjects = await this.findAllOwnProjectsByUser(userId);
       return mapToProjects(findProjects);
     } else {
       const findProjects = await this.projectRepository.find({
@@ -96,7 +98,7 @@ export class ProjectService {
     }
   }
 
-  async getProjectCountsByStatus(userId: number) {
+  async geOwnProjectCountsByStatus(userId: number) {
     const result = await this.projectRepository
       .createQueryBuilder('project')
       .select('COUNT(*)', 'totalCount')
@@ -114,4 +116,70 @@ export class ProjectService {
       .getRawMany();
     return result;
   }
+  /* ====================================================================================== */
+
+  /* find Foreign projects */
+
+  async findAllForeignProjectsByUser(userId: number) {
+    return await this.projectRepository.find({
+      relations: {
+        owner: true,
+        members: true,
+        tasks: true,
+      },
+      where: {
+        members: {
+          id: userId,
+        },
+      },
+      order: {
+        createAt: 'ASC',
+      },
+    });
+  }
+  async getForeignProjects(userId: number, status: StatusProject) {
+    if (status === StatusProject.ALL) {
+      const findProjects = await this.findAllForeignProjectsByUser(userId);
+      return mapToProjects(findProjects);
+    } else {
+      const findProjects = await this.projectRepository.find({
+        relations: {
+          owner: true,
+          members: true,
+          tasks: true,
+        },
+        where: {
+          members: {
+            id: userId,
+          },
+          status,
+        },
+        order: {
+          createAt: 'ASC',
+        },
+      });
+      return mapToProjects(findProjects);
+    }
+  }
+
+  async geForeignProjectCountsByStatus(userId: number) {
+    const result = await this.projectRepository
+      .createQueryBuilder('project')
+      .select('COUNT(*)', 'totalCount')
+      .addSelect('SUM(CASE WHEN project.status = :completed THEN 1 ELSE 0 END)', 'completed')
+      .addSelect('SUM(CASE WHEN project.status = :progress THEN 1 ELSE 0 END)', 'in-progress')
+      .addSelect('SUM(CASE WHEN project.status = :suspend THEN 1 ELSE 0 END)', 'suspend')
+      .leftJoin('project.members', 'members')
+      .where('members.id = :userId', { userId })
+      .groupBy('members.id')
+      .setParameters({
+        completed: 'completed',
+        progress: 'in-progress',
+        suspend: 'suspend',
+      })
+      .getRawMany();
+    return result;
+  }
+
+  /* ====================================================================================== */
 }

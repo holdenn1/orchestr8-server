@@ -13,6 +13,7 @@ export type ProjectOwner = {
   id: number;
   firstName: string;
   lastName: string;
+  photo: string | null,
   phone: string;
   email: string;
   roles: UserRole[];

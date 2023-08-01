@@ -52,9 +52,21 @@ export class ProjectController {
     return this.projectService.getOwnProjects(req.user.sub, status);
   }
 
-  @Get('project-count')
+  @Get('own-project-count')
   @UseGuards(AccessTokenGuard)
-  getProjectCountsByStatus(@Req() req) {
-    return this.projectService.getProjectCountsByStatus(req.user.sub);
+  geOwnProjectCountsByStatus(@Req() req) {
+    return this.projectService.geOwnProjectCountsByStatus(req.user.sub);
+  }
+  
+  @Get('foreign-projects/:status')
+  @UseGuards(AccessTokenGuard)  
+  getForeignProjects(@Req() req, @Param('status') status: StatusProject) {
+    return this.projectService.getForeignProjects(req.user.sub, status);
+  }
+
+  @Get('foreign-project-count')
+  @UseGuards(AccessTokenGuard)
+  geForeignProjectCountsByStatus(@Req() req) {
+    return this.projectService.geForeignProjectCountsByStatus(req.user.sub);
   }
 }
