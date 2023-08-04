@@ -1,4 +1,4 @@
-import {IsEmail, Matches} from 'class-validator';
+import {IsEmail, IsOptional, IsString, Matches} from 'class-validator';
 
 export class CreateUserDto {
   @Matches(/^(?!\s)[^\s].*$/, { message: 'First name is a required field' })
@@ -9,6 +9,10 @@ export class CreateUserDto {
 
   @Matches(/^[\d+]+$/, { message: 'A phone number can only contain numbers' })
   phone: string;
+
+  @IsString()
+  @IsOptional()
+  photo: string;
 
   @IsEmail()
   email: string;
