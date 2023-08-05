@@ -9,11 +9,13 @@ import { Project } from './project/entities/project.entity';
 import { RefreshToken } from './user/entities/refreshToken.entity';
 import { Task } from './task/entities/task.entity';
 import { TaskModule } from './task/task.module';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
   imports: [
     UserModule,
     AuthModule,
+    SocketModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
