@@ -59,10 +59,7 @@ export class ProjectController {
     this.socketGateway.emitToAll(NotificationType.REMOVE_PROJECT, {
       payload: removedProject,
       socketId,
-    });
-
-    console.log(removedProject)
-    
+    });    
     return removedProject;
   }
 

@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Headers,
   Post,
   UseGuards,
   UsePipes,
@@ -15,16 +16,28 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskService } from './task.service';
 import { StatusTask } from './types';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { SocketGateway } from 'src/socket/socket.gateway';
+import { NotificationType } from 'src/socket/types';
 
 @Controller('task')
 export class TaskController {
-  constructor(private readonly taskService: TaskService) {}
+  constructor(private readonly taskService: TaskService, private readonly socketGateway: SocketGateway) {}
 
   @Post('create/:projectId')
   @UseGuards(AccessTokenGuard)
   @UsePipes(new ValidationPipe())
-  create(@Body() createTaskDto: CreateTaskDto, @Param('projectId') projectId: string) {
-    return this.taskService.create(+projectId, createTaskDto);
+  async create(
+    @Body() createTaskDto: CreateTaskDto,
+    @Headers('socketId') socketId: string,
+    @Param('projectId') projectId: string,
+  ) {
+    const addedTask = await this.taskService.create(+projectId, createTaskDto);
+    this.socketGateway.emitToAll(NotificationType.ADD_TASK, {
+      payload: addedTask,
+      socketId,
+    });
+
+    return addedTask;
   }
 
   @Get('/:projectId/:status')
@@ -35,14 +48,28 @@ export class TaskController {
 
   @Patch(':id')
   @UseGuards(AccessTokenGuard)
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    return this.taskService.updateTask(+id, updateTaskDto);
+  async update(
+    @Param('id') id: string,
+    @Headers('socketId') socketId: string,
+    @Body() updateTaskDto: UpdateTaskDto,
+  ) {
+    const updatedTask = await this.taskService.updateTask(+id, updateTaskDto);
+    this.socketGateway.emitToAll(NotificationType.UPDATE_TASK, {
+      payload: updatedTask,
+      socketId,
+    });
+    return updatedTask;
   }
 
   @Delete(':id')
   @UseGuards(AccessTokenGuard)
-  remove(@Param('id') id: string) {
-    return this.taskService.remove(+id);
+  async remove(@Param('id') id: string, @Headers('socketId') socketId: string) {
+    const removedTask = await this.taskService.remove(+id);
+    this.socketGateway.emitToAll(NotificationType.REMOVE_TASK, {
+      payload: removedTask,
+      socketId,
+    });
+    return removedTask;
   }
 
   @Get('tasks/count/:projectId')

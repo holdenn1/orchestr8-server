@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './entities/task.entity';
@@ -77,7 +77,11 @@ export class TaskService {
 
   async remove(id: number) {
     const task = await this.findOneById(id);
-    return await this.taskRepository.remove(task);
+    const removedTask = await this.taskRepository.remove(task);
+    if (!removedTask) {
+      throw new NotFoundException(`Project with ID ${id} not found`);
+    }
+    return { ...removedTask, id };
   }
 
   async getTasksCountsByStatus(projectId: number) {

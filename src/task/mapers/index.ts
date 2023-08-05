@@ -12,6 +12,8 @@ export const mapTaskToProfile = ({
   id,
   completed,
   task,
+  createAt,
+  updateAt,
 });
 
 export const mapTasksToProfile = (tasks: Task[]): TaskToProfile[] => {
@@ -19,5 +21,7 @@ export const mapTasksToProfile = (tasks: Task[]): TaskToProfile[] => {
     id: task.id,
     completed: task.completed,
     task: task.task,
+    createAt: task.updateAt,
+    updateAt: task.updateAt,
   }));
 };
