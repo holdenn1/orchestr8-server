@@ -86,8 +86,6 @@ export class ProjectController {
     @Query('page') page: string,
     @Query('pageSize') pageSize: string,
   ) {
-    
-
     return this.projectService.getOwnProjects(req.user.sub, status, +page, +pageSize);
   }
 
@@ -99,7 +97,6 @@ export class ProjectController {
     @Query('page') page: string,
     @Query('pageSize') pageSize: string,
   ) {
-    
     return this.projectService.getForeignProjects(req.user.sub, status, +page, +pageSize);
   }
 
@@ -113,6 +110,26 @@ export class ProjectController {
   @UseGuards(AccessTokenGuard)
   async geForeignProjectCountsByStatus(@Req() req) {
     return this.projectService.geForeignProjectCountsByStatus(req.user.sub);
+  }
+
+  @Get('search-own-projects/:status')
+  @UseGuards(AccessTokenGuard)
+  searchOwnProjects(
+    @Param('status') status: StatusProject,
+    @Query('searchText') searchText: string,
+    @Req() req,
+  ) {
+    return this.projectService.searchOwnProjects(searchText, req.user.sub, status);
+  }
+
+  @Get('search-foreign-projects/:status')
+  @UseGuards(AccessTokenGuard)
+  searchForeignProjects(
+    @Param('status') status: StatusProject,
+    @Query('searchText') searchText: string,
+    @Req() req,
+  ) {
+    return this.projectService.searchForeignProjects(searchText, req.user.sub, status);
   }
 
   @Get('members')

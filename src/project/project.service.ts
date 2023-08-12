@@ -3,7 +3,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './entities/project.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
 import { mapToProjectOwner, mapToProjectMembers, mapToProject, mapToProjects } from './mapers';
 import { StatusProject } from './types';
@@ -47,6 +47,30 @@ export class ProjectService {
     return { ...removerProject, id };
   }
 
+  async searchOwnProjects(searchText: string, userId: number, status: StatusProject) {
+    const findProjects = await this.projectRepository.find({
+      relations: { members: true, owner: true, tasks: true },
+      where: {
+        owner: { id: userId },
+        title: ILike(`%${searchText}%`),
+        ...(status !== StatusProject.ALL && { status }),
+      },
+    });
+    return mapToProjects(findProjects);
+  }
+
+  async searchForeignProjects(searchText: string, userId: number, status: StatusProject) {
+    const findProjects = await this.projectRepository.find({
+      relations: { members: true, owner: true, tasks: true },
+      where: {
+        members: { id: userId },
+        title: ILike(`%${searchText}%`),
+        ...(status !== StatusProject.ALL && { status }),
+      },
+    });
+    return mapToProjects(findProjects);
+  }
+
   async searchMembers(searchEmail: string, userId: number) {
     return await this.userService.searchUsersByEmail(searchEmail, userId);
   }
@@ -82,31 +106,25 @@ export class ProjectService {
 
   async getOwnProjects(userId: number, status: StatusProject, page: number, pageSize: number) {
     const skip = (page - 1) * pageSize;
-    
-    if (status === StatusProject.ALL) {
-      const findProjects = await this.findAllOwnProjectsByUser(userId, skip, pageSize);
-      return mapToProjects(findProjects);
-    } else {
-      const findProjects = await this.projectRepository.find({
-        relations: {
-          owner: true,
-          members: true,
-          tasks: true,
+    const findProjects = await this.projectRepository.find({
+      relations: {
+        owner: true,
+        members: true,
+        tasks: true,
+      },
+      where: {
+        owner: {
+          id: userId,
         },
-        where: {
-          owner: {
-            id: userId,
-          },
-          status,
-        },
-        order: {
-          createAt: 'DESC',
-        },
-        skip,
-        take: pageSize,
-      });
-      return mapToProjects(findProjects);
-    }
+        ...(status !== StatusProject.ALL && { status }),
+      },
+      order: {
+        createAt: 'DESC',
+      },
+      skip,
+      take: pageSize,
+    });
+    return mapToProjects(findProjects);
   }
 
   async geOwnProjectCountsByStatus(userId: number) {
@@ -154,30 +172,25 @@ export class ProjectService {
   async getForeignProjects(userId: number, status: StatusProject, page: number, pageSize: number) {
     const skip = (page - 1) * pageSize;
 
-    if (status === StatusProject.ALL) {
-      const findProjects = await this.findAllForeignProjectsByUser(userId, skip, pageSize);
-      return mapToProjects(findProjects);
-    } else {
-      const findProjects = await this.projectRepository.find({
-        relations: {
-          owner: true,
-          members: true,
-          tasks: true,
+    const findProjects = await this.projectRepository.find({
+      relations: {
+        owner: true,
+        members: true,
+        tasks: true,
+      },
+      where: {
+        members: {
+          id: userId,
         },
-        where: {
-          members: {
-            id: userId,
-          },
-          status,
-        },
-        order: {
-          createAt: 'ASC',
-        },
-        skip,
-        take: pageSize,
-      });
-      return mapToProjects(findProjects);
-    }
+        ...(status !== StatusProject.ALL && { status }),
+      },
+      order: {
+        createAt: 'ASC',
+      },
+      skip,
+      take: pageSize,
+    });
+    return mapToProjects(findProjects);
   }
 
   async geForeignProjectCountsByStatus(userId: number) {
