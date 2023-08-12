@@ -10,6 +10,7 @@ import {
   ValidationPipe,
   Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -36,14 +37,20 @@ export class TaskController {
       payload: addedTask,
       socketId,
     });
-
     return addedTask;
   }
 
   @Get('/:projectId/:status')
   @UseGuards(AccessTokenGuard)
-  getTasks(@Param('projectId') projectId: string, @Param('status') status: StatusTask) {
-    return this.taskService.getTasks(+projectId, status);
+  getTasks(
+    @Param('projectId') projectId: string,
+    @Param('status') status: StatusTask,
+    @Query('page') page: string,
+    @Query('pageSize') pageSize: string,
+  ) {
+
+    
+    return this.taskService.getTasks(+projectId, status, +page, +pageSize);
   }
 
   @Patch(':id')
@@ -58,6 +65,7 @@ export class TaskController {
       payload: updatedTask,
       socketId,
     });
+
     return updatedTask;
   }
 

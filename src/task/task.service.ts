@@ -27,7 +27,7 @@ export class TaskService {
     }
   }
 
-  async findAllTasksByUser(projectId: number) {
+  async findAllTasksByUser(projectId: number, skip: number, take: number) {
     return await this.taskRepository.find({
       where: {
         project: {
@@ -38,12 +38,16 @@ export class TaskService {
         completed: 'ASC',
         createAt: 'ASC',
       },
+      skip,
+      take,
     });
   }
 
-  async getTasks(projectId: number, status: StatusTask) {
+  async getTasks(projectId: number, status: StatusTask, page: number, pageSize: number) {
+    const skip = (page - 1) * pageSize;
+
     if (status === StatusTask.ALL) {
-      const findTasks = await this.findAllTasksByUser(projectId);
+      const findTasks = await this.findAllTasksByUser(projectId, skip, pageSize);
       return mapTasksToProfile(findTasks);
     } else if (status === StatusTask.COMPLETED) {
       const findTasks = await this.taskRepository.find({
@@ -57,6 +61,8 @@ export class TaskService {
           completed: 'ASC',
           createAt: 'ASC',
         },
+        skip,
+        take: pageSize,
       });
       return mapTasksToProfile(findTasks);
     }

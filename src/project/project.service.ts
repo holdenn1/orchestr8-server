@@ -60,7 +60,7 @@ export class ProjectService {
 
   /* find own projects */
 
-  async findAllOwnProjectsByUser(userId: number) {
+  async findAllOwnProjectsByUser(userId: number, skip: number, take: number) {
     return await this.projectRepository.find({
       relations: {
         owner: true,
@@ -73,14 +73,18 @@ export class ProjectService {
         },
       },
       order: {
-        createAt: 'ASC',
+        createAt: 'DESC',
       },
+      skip,
+      take,
     });
   }
 
-  async getOwnProjects(userId: number, status: StatusProject) {
+  async getOwnProjects(userId: number, status: StatusProject, page: number, pageSize: number) {
+    const skip = (page - 1) * pageSize;
+    
     if (status === StatusProject.ALL) {
-      const findProjects = await this.findAllOwnProjectsByUser(userId);
+      const findProjects = await this.findAllOwnProjectsByUser(userId, skip, pageSize);
       return mapToProjects(findProjects);
     } else {
       const findProjects = await this.projectRepository.find({
@@ -96,8 +100,10 @@ export class ProjectService {
           status,
         },
         order: {
-          createAt: 'ASC',
+          createAt: 'DESC',
         },
+        skip,
+        take: pageSize,
       });
       return mapToProjects(findProjects);
     }
@@ -125,7 +131,7 @@ export class ProjectService {
 
   /* find Foreign projects */
 
-  async findAllForeignProjectsByUser(userId: number) {
+  async findAllForeignProjectsByUser(userId: number, skip: number, take: number) {
     return await this.projectRepository.find({
       relations: {
         owner: true,
@@ -140,11 +146,16 @@ export class ProjectService {
       order: {
         createAt: 'ASC',
       },
+      skip,
+      take,
     });
   }
-  async getForeignProjects(userId: number, status: StatusProject) {
+
+  async getForeignProjects(userId: number, status: StatusProject, page: number, pageSize: number) {
+    const skip = (page - 1) * pageSize;
+
     if (status === StatusProject.ALL) {
-      const findProjects = await this.findAllForeignProjectsByUser(userId);
+      const findProjects = await this.findAllForeignProjectsByUser(userId, skip, pageSize);
       return mapToProjects(findProjects);
     } else {
       const findProjects = await this.projectRepository.find({
@@ -162,6 +173,8 @@ export class ProjectService {
         order: {
           createAt: 'ASC',
         },
+        skip,
+        take: pageSize,
       });
       return mapToProjects(findProjects);
     }

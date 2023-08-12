@@ -42,14 +42,29 @@ export class ProjectController {
 
   @Patch(':id')
   @UseGuards(AccessTokenGuard)
-  async update(
+  async updateProject(
     @Param('id') id: string,
     @Headers('socketId') socketId: string,
     @Body() updateProjectDto: UpdateProjectDto,
   ) {
-    const project = await this.projectService.updateProject(+id, updateProjectDto);
-    this.socketGateway.emitToAll(NotificationType.UPDATE_COUNT_PROJECT, { socketId });
-    return project;
+    const updatedProject = await this.projectService.updateProject(+id, updateProjectDto);
+    this.socketGateway.emitToAll(NotificationType.UPDATE_PROJECT, { payload: updatedProject, socketId });
+    return updatedProject;
+  }
+
+  @Patch('update-status-proj/:id')
+  @UseGuards(AccessTokenGuard)
+  async updateProjectStatus(
+    @Param('id') id: string,
+    @Headers('socketId') socketId: string,
+    @Body() updateProjectDto: UpdateProjectDto,
+  ) {
+    const updatedProject = await this.projectService.updateProject(+id, updateProjectDto);
+    this.socketGateway.emitToAll(NotificationType.UPDATE_PROJECT_STATUS, {
+      payload: updatedProject,
+      socketId,
+    });
+    return updatedProject;
   }
 
   @Delete(':id')
@@ -59,37 +74,50 @@ export class ProjectController {
     this.socketGateway.emitToAll(NotificationType.REMOVE_PROJECT, {
       payload: removedProject,
       socketId,
-    });    
+    });
     return removedProject;
+  }
+
+  @Get('own-projects/:status')
+  @UseGuards(AccessTokenGuard)
+  getOwnProjects(
+    @Req() req,
+    @Param('status') status: StatusProject,
+    @Query('page') page: string,
+    @Query('pageSize') pageSize: string,
+  ) {
+    
+
+    return this.projectService.getOwnProjects(req.user.sub, status, +page, +pageSize);
+  }
+
+  @Get('foreign-projects/:status')
+  @UseGuards(AccessTokenGuard)
+  getForeignProjects(
+    @Req() req,
+    @Param('status') status: StatusProject,
+    @Query('page') page: string,
+    @Query('pageSize') pageSize: string,
+  ) {
+    
+    return this.projectService.getForeignProjects(req.user.sub, status, +page, +pageSize);
+  }
+
+  @Get('own-project-count')
+  @UseGuards(AccessTokenGuard)
+  async geOwnProjectCountsByStatus(@Req() req) {
+    return this.projectService.geOwnProjectCountsByStatus(req.user.sub);
+  }
+
+  @Get('foreign-project-count')
+  @UseGuards(AccessTokenGuard)
+  async geForeignProjectCountsByStatus(@Req() req) {
+    return this.projectService.geForeignProjectCountsByStatus(req.user.sub);
   }
 
   @Get('members')
   @UseGuards(AccessTokenGuard)
   searchMembers(@Query('searchText') searchText: string, @Req() req) {
     return this.projectService.searchMembers(searchText, req.user.sub);
-  }
-
-  @Get('own-projects/:status')
-  @UseGuards(AccessTokenGuard)
-  getOwnProjects(@Req() req, @Param('status') status: StatusProject) {
-    return this.projectService.getOwnProjects(req.user.sub, status);
-  }
-
-  @Get('own-project-count')
-  @UseGuards(AccessTokenGuard)
-  geOwnProjectCountsByStatus(@Req() req) {
-    return this.projectService.geOwnProjectCountsByStatus(req.user.sub);
-  }
-
-  @Get('foreign-projects/:status')
-  @UseGuards(AccessTokenGuard)
-  getForeignProjects(@Req() req, @Param('status') status: StatusProject) {
-    return this.projectService.getForeignProjects(req.user.sub, status);
-  }
-
-  @Get('foreign-project-count')
-  @UseGuards(AccessTokenGuard)
-  geForeignProjectCountsByStatus(@Req() req) {
-    return this.projectService.geForeignProjectCountsByStatus(req.user.sub);
   }
 }

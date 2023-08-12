@@ -7,6 +7,6 @@ export type TaskToProfile = {
 };
 
 export enum StatusTask {
-  ALL = 'all-tasks',
-  COMPLETED = 'completed',
+  ALL = 'tasks-all',
+  COMPLETED = 'tasks-completed',
 }
