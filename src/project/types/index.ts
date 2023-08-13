@@ -1,4 +1,3 @@
-import { Task } from 'src/task/entities/task.entity';
 import { UserRole } from 'src/user/types/enum.user-role';
 
 export enum StatusProject {
@@ -9,19 +8,19 @@ export enum StatusProject {
   ALL = 'all-projects',
 }
 
-export type ProjectOwner = {
+export type MemberProject = {
   id: number;
   firstName: string;
   lastName: string;
-  photo: string | null,
+  photo: string | null;
   phone: string;
   email: string;
-  roles: UserRole[];
+  projectRole: string;
 };
 
-export type MemberProject = ProjectOwner;
+export type ProjectOwner = Omit<MemberProject, 'projectRole'>;
 
-export type ProjectPublick = {
+export type ProjectPublic = {
   id: number;
 
   status: StatusProject;
@@ -33,4 +32,10 @@ export type ProjectPublick = {
   owner: ProjectOwner;
 
   members: MemberProject[];
+};
+
+export type UserRoleToProfile = {
+  id: number;
+  projectId: number;
+  role: UserRole;
 };

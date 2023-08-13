@@ -11,6 +11,7 @@ import {
 import { User } from '../../user/entities/user.entity';
 import { StatusProject } from '../types';
 import { Task } from 'src/task/entities/task.entity';
+import { ProjectUserRole } from './project-roles.entity';
 
 @Entity()
 export class Project {
@@ -36,6 +37,9 @@ export class Project {
 
   @ManyToMany(() => User, (user) => user.memberProjects)
   members: User[];
+
+  @OneToMany(() => ProjectUserRole, (projectUserRole) => projectUserRole.project)
+  projectRoles: ProjectUserRole[];
 
   @OneToMany(() => Task, (task) => task.project,)
   tasks: Task[];

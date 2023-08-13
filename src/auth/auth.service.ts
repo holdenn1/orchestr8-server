@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
-import * as argon2 from 'argon2';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { RefreshTokenService } from '../user/refreshToken.service';
-import { UserRequest } from './types';
 import { mapToUserProfile } from './mapers';
+import { UserRequest } from './types';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +21,7 @@ export class AuthService {
       ...createUserDto,
       password: hash,
     });
-    const tokens = await this.refreshTokenService.getTokens(newUser.id, newUser.email, newUser.roles);
+    const tokens = await this.refreshTokenService.getTokens(newUser.id, newUser.email);
     await this.refreshTokenService.create({
       user: newUser,
       value: tokens.refreshToken,
@@ -34,7 +34,7 @@ export class AuthService {
     if (!findUser) throw new BadRequestException('User does not exist');
     const passwordMatches = await argon2.verify(findUser.password, data.password);
     if (!passwordMatches) throw new BadRequestException('Password is incorrect');
-    const tokens = await this.refreshTokenService.getTokens(findUser.id, findUser.email, findUser.roles);
+    const tokens = await this.refreshTokenService.getTokens(findUser.id, findUser.email);
     await this.refreshTokenService.create({
       user: findUser,
       value: tokens.refreshToken,
@@ -51,9 +51,9 @@ export class AuthService {
   }
 
   async refreshTokensLogin(userData: UserRequest) {
-    const finstUser = await this.userService.findOneById(userData.sub);
+    const findUser = await this.userService.findOneById(userData.sub);
     const tokens = await this.refreshTokens(userData);
-    const user = mapToUserProfile(finstUser);
+    const user = mapToUserProfile(findUser);
     return { user, tokens };
   }
 }

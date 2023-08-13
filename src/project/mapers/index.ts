@@ -1,6 +1,7 @@
 import { User } from 'src/user/entities/user.entity';
-import { MemberProject, ProjectOwner, ProjectPublick } from '../types';
+import { MemberProject, ProjectOwner, ProjectPublic } from '../types';
 import { Project } from '../entities/project.entity';
+import { UserRole } from 'src/user/types/enum.user-role';
 
 export const mapToProjectMembers = (members: User[]): MemberProject[] =>
   members.map((member) => ({
@@ -10,7 +11,7 @@ export const mapToProjectMembers = (members: User[]): MemberProject[] =>
     photo: member.photo,
     phone: member.phone,
     email: member.email,
-    roles: member.roles,
+    projectRole: UserRole.PROJECT_MEMBER,
   }));
 
 export const mapToProjectOwner = (user: User): ProjectOwner => ({
@@ -20,10 +21,9 @@ export const mapToProjectOwner = (user: User): ProjectOwner => ({
   photo: user.photo,
   email: user.email,
   phone: user.phone,
-  roles: user.roles,
 });
 
-export const mapToProject = (project: Project): ProjectPublick => ({
+export const mapToProject = (project: Project): ProjectPublic => ({
   id: project.id,
   status: project.status,
   title: project.title,
@@ -32,7 +32,7 @@ export const mapToProject = (project: Project): ProjectPublick => ({
   members: mapToProjectMembers(project.members),
 });
 
-export const mapToProjects = (project: Project[]): ProjectPublick[] =>
+export const mapToProjects = (project: Project[]): ProjectPublic[] =>
   project.map((project) => ({
     id: project.id,
     status: project.status,

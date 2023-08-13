@@ -39,13 +39,12 @@ export class RefreshTokenService {
     });
   }
 
-  async getTokens(userId: number, email: string, roles: string[]) {
+  async getTokens(userId: number, email: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         {
           sub: userId,
           email,
-          roles,
         },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
@@ -56,7 +55,6 @@ export class RefreshTokenService {
         {
           sub: userId,
           email,
-          roles,
         },
         {
           secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
@@ -104,10 +102,8 @@ export class RefreshTokenService {
     } else if (token.refreshToken !== user.refreshToken) {
       throw new ForbiddenException('Access Denied');
     }
-    const tokens = await this.getTokens(user.sub, user.email, user.roles);
+    const tokens = await this.getTokens(user.sub, user.email);
     await this.update(token.id, tokens.refreshToken);
     return tokens;
   }
-
-
 }

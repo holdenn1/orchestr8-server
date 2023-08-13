@@ -1,10 +1,8 @@
 import { Project } from 'src/project/entities/project.entity';
-import { UserRole } from '../../user/types/enum.user-role';
 
 export type JwtPayload = {
   sub: number;
   email: string;
-  roles: UserRole[];
 };
 
 export type UserRequest = JwtPayload & {
@@ -19,6 +17,5 @@ export type UserProfile = {
   photo: string;
   phone: string;
   email: string;
-  roles: UserRole[];
   memberProjects: Project[];
 };

@@ -7,24 +7,42 @@ import { ILike, Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
 import { mapToProjectOwner, mapToProjectMembers, mapToProject, mapToProjects } from './mapers';
 import { StatusProject } from './types';
+import { UserRole } from 'src/user/types/enum.user-role';
+import { ProjectUserRole } from './entities/project-roles.entity';
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(Project)
     private projectRepository: Repository<Project>,
+
+    @InjectRepository(ProjectUserRole)
+    private projectUserRoleRepository: Repository<ProjectUserRole>,
+
     private userService: UserService,
   ) {}
 
   async create(userId: number, { title, description, membersIds }: CreateProjectDto) {
     const user = await this.userService.findOneById(userId);
     const getMembers = membersIds ? await this.userService.findAllByIds(membersIds) : [];
+
     const project = await this.projectRepository.save({
       title,
       description,
       members: mapToProjectMembers(getMembers),
       owner: mapToProjectOwner(user),
     });
+
+    if (getMembers.length) {
+      for (const member of getMembers) {
+        await this.projectUserRoleRepository.save({
+          project,
+          user: member,
+          role: UserRole.PROJECT_MEMBER,
+        });
+      }
+    }
+
     return mapToProject(project);
   }
 

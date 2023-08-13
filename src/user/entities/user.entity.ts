@@ -9,8 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Project } from '../../project/entities/project.entity';
-import { UserRole } from '../types/enum.user-role';
 import { RefreshToken } from './refreshToken.entity';
+import { ProjectUserRole } from 'src/project/entities/project-roles.entity';
 
 @Entity({ name: 'app_user' })
 export class User {
@@ -35,13 +35,8 @@ export class User {
   @Column()
   password: string;
 
-  @Column({
-    type: 'enum',
-    enum: UserRole,
-    array: true,
-    default: [UserRole.USER],
-  })
-  roles: UserRole[];
+  @OneToMany(() => ProjectUserRole, (projectUserRole) => projectUserRole.user)
+  projectRoles: ProjectUserRole[];
 
   @OneToMany(() => Project, (project) => project.owner)
   ownedProjects: Project[];
