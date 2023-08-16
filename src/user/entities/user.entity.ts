@@ -2,15 +2,15 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
+  JoinColumn,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Project } from '../../project/entities/project.entity';
 import { RefreshToken } from './refreshToken.entity';
-import { ProjectUserRole } from 'src/project/entities/project-roles.entity';
+import { Member } from './member.entity';
 
 @Entity({ name: 'app_user' })
 export class User {
@@ -26,24 +26,20 @@ export class User {
   @Column({ nullable: true })
   photo: string;
 
-  @Column({unique: true})
+  @Column({ unique: true })
   phone: string;
 
-  @Column({unique: true})
+  @Column({ unique: true })
   email: string;
 
   @Column()
   password: string;
 
-  @OneToMany(() => ProjectUserRole, (projectUserRole) => projectUserRole.user)
-  projectRoles: ProjectUserRole[];
+  @OneToMany(() => Member, (member) => member.user)
+  member: Member[];
 
   @OneToMany(() => Project, (project) => project.owner)
   ownedProjects: Project[];
-
-  @ManyToMany(() => Project, (project) => project.members)
-  @JoinTable()
-  memberProjects: Project[];
 
   @OneToMany(() => RefreshToken, (token) => token.user)
   refreshTokens: RefreshToken[];

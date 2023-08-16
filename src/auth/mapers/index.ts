@@ -8,5 +8,5 @@ export const mapToUserProfile = (user: User): UserProfile => ({
   photo: user.photo,
   email: user.email,
   phone: user.phone,
-  memberProjects: user.memberProjects ?? [],
+  member: user.member ?? [],
 });

@@ -7,8 +7,8 @@ import { ILike, Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
 import { mapToProjectOwner, mapToProjectMembers, mapToProject, mapToProjects } from './mapers';
 import { StatusProject } from './types';
-import { UserRole } from 'src/user/types/enum.user-role';
-import { ProjectUserRole } from './entities/project-roles.entity';
+import { MemberRole } from 'src/user/types/enum.user-role';
+import { Member } from 'src/user/entities/member.entity';
 
 @Injectable()
 export class ProjectService {
@@ -16,43 +16,63 @@ export class ProjectService {
     @InjectRepository(Project)
     private projectRepository: Repository<Project>,
 
-    @InjectRepository(ProjectUserRole)
-    private projectUserRoleRepository: Repository<ProjectUserRole>,
-
     private userService: UserService,
   ) {}
 
   async create(userId: number, { title, description, membersIds }: CreateProjectDto) {
     const user = await this.userService.findOneById(userId);
-    const getMembers = membersIds ? await this.userService.findAllByIds(membersIds) : [];
+    const getMembers = membersIds ? await this.userService.findAllByIds(userId, membersIds) : [];
+
+    const members = getMembers.map((user) => {
+      const createdMember = new Member();
+      createdMember.user = user;
+      createdMember.role = MemberRole.PROJECT_MEMBER;
+      return createdMember;
+    });
 
     const project = await this.projectRepository.save({
       title,
       description,
-      members: mapToProjectMembers(getMembers),
-      owner: mapToProjectOwner(user),
+      members,
+      owner: user,
     });
-
-    if (getMembers.length) {
-      for (const member of getMembers) {
-        await this.projectUserRoleRepository.save({
-          project,
-          user: member,
-          role: UserRole.PROJECT_MEMBER,
-        });
-      }
-    }
-
     return mapToProject(project);
   }
 
-  async updateProject(id: number, dto: Partial<UpdateProjectDto>) {
-    const project = await this.findOneById(id);
+  async updateProject(userId: number, projectId: number, dto: Partial<UpdateProjectDto>) {
+    const project = await this.findOneById(projectId);
+
     project.title = dto.title ?? project.title;
     project.description = dto.description ?? project.description;
     project.status = dto.status ?? project.status;
-    project.members = dto.membersIds ? await this.userService.findAllByIds(dto.membersIds) : project.members;
-    return this.projectRepository.save({ ...project, members: mapToProjectMembers(project.members) });
+
+    const getUsers = dto.membersIds ? await this.userService.findAllByIds(userId, dto.membersIds) : [];
+    const projectMembersIds = mapToProjectMembers(project.members).map((member) => member.id);
+    const newMembers = getUsers.filter((user) => !projectMembersIds.includes(user.id));
+
+    if (dto.membersIds) {
+      const membersToDelete = mapToProjectMembers(project.members).filter((member) =>
+        dto.membersIds.includes(member.id),
+      );
+      if (membersToDelete.length) {
+        const memberToDeleteIds = membersToDelete.map((member) => member.id);
+        project.members = project.members.filter(({ user }) => !memberToDeleteIds.includes(user.id));
+        await this.userService.removeMembers(memberToDeleteIds);
+      }
+    }
+
+    if (newMembers.length) {
+      const members = newMembers.map((user) => {
+        const createdMember = new Member();
+        createdMember.user = user;
+        createdMember.role = MemberRole.PROJECT_MEMBER;
+        return createdMember;
+      });
+      project.members = dto.membersIds ? [...project.members, ...members] : project.members;
+    }
+
+    const updatedProject = await this.projectRepository.save(project);
+    return mapToProject(updatedProject);
   }
 
   async remove(id: number) {
@@ -89,36 +109,14 @@ export class ProjectService {
     return mapToProjects(findProjects);
   }
 
-  async searchMembers(searchEmail: string, userId: number) {
+  async searchUsers(searchEmail: string, userId: number) {
     return await this.userService.searchUsersByEmail(searchEmail, userId);
   }
 
   async findOneById(id: number) {
     return await this.projectRepository.findOne({
       where: { id },
-      relations: { members: true, owner: true, tasks: true },
-    });
-  }
-
-  /* find own projects */
-
-  async findAllOwnProjectsByUser(userId: number, skip: number, take: number) {
-    return await this.projectRepository.find({
-      relations: {
-        owner: true,
-        members: true,
-        tasks: true,
-      },
-      where: {
-        owner: {
-          id: userId,
-        },
-      },
-      order: {
-        createAt: 'DESC',
-      },
-      skip,
-      take,
+      relations: { members: { user: true }, owner: true, tasks: true },
     });
   }
 
@@ -127,7 +125,9 @@ export class ProjectService {
     const findProjects = await this.projectRepository.find({
       relations: {
         owner: true,
-        members: true,
+        members: {
+          user: true,
+        },
         tasks: true,
       },
       where: {
@@ -142,10 +142,12 @@ export class ProjectService {
       skip,
       take: pageSize,
     });
+
     return mapToProjects(findProjects);
   }
 
   async geOwnProjectCountsByStatus(userId: number) {
+    
     const result = await this.projectRepository
       .createQueryBuilder('project')
       .select('COUNT(*)', 'totalCount')
@@ -167,33 +169,13 @@ export class ProjectService {
 
   /* find Foreign projects */
 
-  async findAllForeignProjectsByUser(userId: number, skip: number, take: number) {
-    return await this.projectRepository.find({
-      relations: {
-        owner: true,
-        members: true,
-        tasks: true,
-      },
-      where: {
-        members: {
-          id: userId,
-        },
-      },
-      order: {
-        createAt: 'ASC',
-      },
-      skip,
-      take,
-    });
-  }
-
   async getForeignProjects(userId: number, status: StatusProject, page: number, pageSize: number) {
     const skip = (page - 1) * pageSize;
 
     const findProjects = await this.projectRepository.find({
       relations: {
         owner: true,
-        members: true,
+        members: { user: true },
         tasks: true,
       },
       where: {

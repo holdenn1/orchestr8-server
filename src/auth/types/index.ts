@@ -1,4 +1,4 @@
-import { Project } from 'src/project/entities/project.entity';
+import { Member } from 'src/user/entities/member.entity';
 
 export type JwtPayload = {
   sub: number;
@@ -17,5 +17,5 @@ export type UserProfile = {
   photo: string;
   phone: string;
   email: string;
-  memberProjects: Project[];
+  member: Member[];
 };

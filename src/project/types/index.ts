@@ -1,4 +1,5 @@
-import { UserRole } from 'src/user/types/enum.user-role';
+import { Member } from 'src/user/entities/member.entity';
+import { MemberRole } from 'src/user/types/enum.user-role';
 
 export enum StatusProject {
   COMPLETED = 'completed',
@@ -8,34 +9,26 @@ export enum StatusProject {
   ALL = 'all-projects',
 }
 
-export type MemberProject = {
+export type ProjectOwner = {
   id: number;
   firstName: string;
   lastName: string;
   photo: string | null;
   phone: string;
   email: string;
-  projectRole: string;
 };
 
-export type ProjectOwner = Omit<MemberProject, 'projectRole'>;
+export type UserToProfile = ProjectOwner
+
+export type ProjectMember = ProjectOwner & {
+  role: MemberRole;
+};
 
 export type ProjectPublic = {
   id: number;
-
   status: StatusProject;
-
   title: string;
-
   description: string;
-
   owner: ProjectOwner;
-
-  members: MemberProject[];
-};
-
-export type UserRoleToProfile = {
-  id: number;
-  projectId: number;
-  role: UserRole;
+  members: ProjectMember[];
 };

@@ -43,11 +43,12 @@ export class ProjectController {
   @Patch(':id')
   @UseGuards(AccessTokenGuard)
   async updateProject(
+    @Req() req,
     @Param('id') id: string,
     @Headers('socketId') socketId: string,
     @Body() updateProjectDto: UpdateProjectDto,
   ) {
-    const updatedProject = await this.projectService.updateProject(+id, updateProjectDto);
+    const updatedProject = await this.projectService.updateProject(req.user.sub, +id, updateProjectDto);
     this.socketGateway.emitToAll(NotificationType.UPDATE_PROJECT, { payload: updatedProject, socketId });
     return updatedProject;
   }
@@ -55,11 +56,12 @@ export class ProjectController {
   @Patch('update-status-proj/:id')
   @UseGuards(AccessTokenGuard)
   async updateProjectStatus(
+    @Req() req,
     @Param('id') id: string,
     @Headers('socketId') socketId: string,
     @Body() updateProjectDto: UpdateProjectDto,
   ) {
-    const updatedProject = await this.projectService.updateProject(+id, updateProjectDto);
+    const updatedProject = await this.projectService.updateProject(req.user.sub, +id, updateProjectDto);
     this.socketGateway.emitToAll(NotificationType.UPDATE_PROJECT_STATUS, {
       payload: updatedProject,
       socketId,
@@ -132,9 +134,10 @@ export class ProjectController {
     return this.projectService.searchForeignProjects(searchText, req.user.sub, status);
   }
 
-  @Get('members')
+  @Get('users')
   @UseGuards(AccessTokenGuard)
-  searchMembers(@Query('searchText') searchText: string, @Req() req) {
-    return this.projectService.searchMembers(searchText, req.user.sub);
+  searchUsers(@Query('searchText') searchText: string, @Req() req) {
+    return this.projectService.searchUsers(searchText, req.user.sub);
   }
+
 }

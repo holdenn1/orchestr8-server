@@ -10,7 +10,7 @@ import { RefreshToken } from './user/entities/refreshToken.entity';
 import { Task } from './task/entities/task.entity';
 import { TaskModule } from './task/task.module';
 import { SocketModule } from './socket/socket.module';
-import { ProjectUserRole } from './project/entities/project-roles.entity';
+import { Member } from './user/entities/member.entity';
 
 @Module({
   imports: [
@@ -29,7 +29,7 @@ import { ProjectUserRole } from './project/entities/project-roles.entity';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [User, Project, ProjectUserRole, RefreshToken, Task],
+        entities: [User, Project, Member, RefreshToken, Task],
         synchronize: true,
       }),
       inject: [ConfigService],

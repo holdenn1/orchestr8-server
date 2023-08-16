@@ -4,16 +4,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository, In, ILike, And, Not } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { mapToProjectMembers } from 'src/project/mapers';
+import { mapToProjectMembers, mapToProjectUsers } from 'src/project/mapers';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { storage } from 'src/firebase';
 import { mapToUserProfile } from 'src/auth/mapers';
+import { Member } from './entities/member.entity';
+import { MemberRole } from './types/enum.user-role';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+
+    @InjectRepository(Member)
+    private memberRepository: Repository<Member>,
   ) {}
 
   async create(dto: CreateUserDto) {
@@ -38,22 +43,29 @@ export class UserService {
     return this.userRepository.find({
       relations: {
         ownedProjects: true,
-        memberProjects: true,
         refreshTokens: true,
       },
     });
   }
 
-  async findAllByIds(membersIds: number[]) {
-    return await this.userRepository.find({ where: { id: In(membersIds) } });
+  async findAllByIds(userId: number, membersIds: number[]) {
+    if (!membersIds.length) {
+      return [];
+    }
+    return await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.member', 'member')
+      .where('user.id IN (:...ids)', { ids: membersIds })
+      .andWhere('user.id != :id', { id: userId })
+      .getMany();
   }
 
   async findOneById(id: number) {
     return await this.userRepository.findOne({
       relations: {
         ownedProjects: true,
-        memberProjects: true,
         refreshTokens: true,
+        member: true,
       },
       where: { id },
     });
@@ -63,7 +75,6 @@ export class UserService {
     return await this.userRepository.findOne({
       relations: {
         ownedProjects: true,
-        memberProjects: true,
         refreshTokens: true,
       },
       where: {
@@ -91,11 +102,23 @@ export class UserService {
       where: { email: ILike(`%${searchEmail}%`), id: Not(userId) },
       take: 10,
     });
-    return mapToProjectMembers(users);
+    return mapToProjectUsers(users);
   }
 
   async getUser(email: string) {
     const user = await this.findOneByEmail(email);
     return mapToUserProfile(user);
+  }
+
+  async removeMembers(membersIds: number[]) {
+    await this.memberRepository.delete({ user: { id: In(membersIds) } });
+  }
+
+  async setMemberRole(memberId: number, memberRole: MemberRole) {
+    const member = await this.memberRepository.findOne({ where: { user: { id: memberId } } });
+
+    member.role = memberRole;
+
+    await this.memberRepository.save(member);
   }
 }

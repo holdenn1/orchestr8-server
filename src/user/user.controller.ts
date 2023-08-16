@@ -7,11 +7,14 @@ import {
   UploadedFile,
   Req,
   Post,
+  Patch,
+  Body,
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AccessTokenGuard } from '../auth/guards/accessToken.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { MemberRole } from './types/enum.user-role';
 
 @Controller('user')
 export class UserController {
@@ -34,5 +37,11 @@ export class UserController {
   @UseGuards(AccessTokenGuard)
   getUser(@Req() req) {
     return this.userService.getUser(req.user.email);
+  }
+
+  @Patch('update/member-role/:id')
+  @UseGuards(AccessTokenGuard)
+  async setMemberRole(@Param('id') id: string, @Body() updateMemberRole: { memberRole: MemberRole }) {
+    await this.userService.setMemberRole(+id, updateMemberRole.memberRole);
   }
 }

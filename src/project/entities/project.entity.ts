@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -11,7 +10,7 @@ import {
 import { User } from '../../user/entities/user.entity';
 import { StatusProject } from '../types';
 import { Task } from 'src/task/entities/task.entity';
-import { ProjectUserRole } from './project-roles.entity';
+import { Member } from 'src/user/entities/member.entity';
 
 @Entity()
 export class Project {
@@ -35,13 +34,10 @@ export class Project {
   @ManyToOne(() => User, (user) => user.ownedProjects)
   owner: User;
 
-  @ManyToMany(() => User, (user) => user.memberProjects)
-  members: User[];
+  @OneToMany(() => Member, (member) => member.project, { cascade: true })
+  members: Member[];
 
-  @OneToMany(() => ProjectUserRole, (projectUserRole) => projectUserRole.project)
-  projectRoles: ProjectUserRole[];
-
-  @OneToMany(() => Task, (task) => task.project,)
+  @OneToMany(() => Task, (task) => task.project)
   tasks: Task[];
 
   @CreateDateColumn()
