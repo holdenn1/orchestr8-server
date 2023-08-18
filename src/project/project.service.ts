@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common/exceptions';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './entities/project.entity';
 import { ILike, Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
-import { mapToProjectOwner, mapToProjectMembers, mapToProject, mapToProjects } from './mapers';
+import { mapToProjectMembers, mapToProject, mapToProjects } from './mapers';
 import { StatusProject } from './types';
 import { MemberRole } from 'src/user/types/enum.user-role';
 import { Member } from 'src/user/entities/member.entity';
@@ -41,53 +42,71 @@ export class ProjectService {
 
   async updateProject(userId: number, projectId: number, dto: Partial<UpdateProjectDto>) {
     const project = await this.findOneById(projectId);
+    const user = await this.userService.findOneUserForCheckRole(userId, projectId);
 
-    project.title = dto.title ?? project.title;
-    project.description = dto.description ?? project.description;
-    project.status = dto.status ?? project.status;
+    if (
+      project.owner.id === userId ||
+      user?.member.some((member) => member.role === MemberRole.PROJECT_MANAGER)
+    ) {
+      project.title = dto.title ?? project.title;
+      project.description = dto.description ?? project.description;
 
-    const getUsers = dto.membersIds ? await this.userService.findAllByIds(userId, dto.membersIds) : [];
-    const projectMembersIds = mapToProjectMembers(project.members).map((member) => member.id);
-    const newMembers = getUsers.filter((user) => !projectMembersIds.includes(user.id));
-
-    if (dto.membersIds) {
-      const membersToDelete = mapToProjectMembers(project.members).filter((member) =>
-        dto.membersIds.includes(member.id),
-      );
-      if (membersToDelete.length) {
-        const memberToDeleteIds = membersToDelete.map((member) => member.id);
-        project.members = project.members.filter(({ user }) => !memberToDeleteIds.includes(user.id));
-        await this.userService.removeMembers(memberToDeleteIds);
+      if (project.owner.id == userId) {
+        project.status = dto.status ?? project.status;
       }
-    }
 
-    if (newMembers.length) {
-      const members = newMembers.map((user) => {
-        const createdMember = new Member();
-        createdMember.user = user;
-        createdMember.role = MemberRole.PROJECT_MEMBER;
-        return createdMember;
-      });
-      project.members = dto.membersIds ? [...project.members, ...members] : project.members;
-    }
+      if (dto.membersIds) {
+        const filterDtoMemberIds = dto.membersIds.filter((id) => id !== project.owner.id);
 
-    const updatedProject = await this.projectRepository.save(project);
-    return mapToProject(updatedProject);
+        const getUsers = filterDtoMemberIds
+          ? await this.userService.findAllByIds(userId, filterDtoMemberIds)
+          : [];
+        const projectMembersIds = mapToProjectMembers(project.members).map((member) => member.id);
+        const newMembers = getUsers.filter((user) => !projectMembersIds.includes(user.id));
+
+        if (filterDtoMemberIds) {
+          const membersToDelete = mapToProjectMembers(project.members).filter((member) =>
+            filterDtoMemberIds.includes(member.id),
+          );
+          if (membersToDelete.length) {
+            const memberToDeleteIds = membersToDelete.map((member) => member.id);
+            project.members = project.members.filter(({ user }) => !memberToDeleteIds.includes(user.id));
+            await this.userService.removeMembers(memberToDeleteIds, projectId);
+          }
+        }
+
+        if (newMembers.length) {
+          const members = newMembers.map((user) => {
+            const createdMember = new Member();
+            createdMember.user = user;
+            createdMember.role = MemberRole.PROJECT_MEMBER;
+            return createdMember;
+          });
+          project.members = filterDtoMemberIds ? [...project.members, ...members] : project.members;
+        }
+      }
+
+      const updatedProject = await this.projectRepository.save(project);
+      return mapToProject(updatedProject);
+    } else {
+      throw new ForbiddenException();
+    }
   }
 
-  async remove(id: number) {
+  async removeProject(id: number, userId: number) {
     const project = await this.findOneById(id);
-    const removerProject = await this.projectRepository.remove(project);
-    if (!removerProject) {
-      throw new NotFoundException(`Project with ID ${id} not found`);
+    if (project.owner.id == userId) {
+      const removerProject = await this.projectRepository.remove(project);
+      if (!removerProject) {
+        throw new NotFoundException(`Project with ID ${id} not found`);
+      }
+      return mapToProject({ ...removerProject, id });
     }
-
-    return { ...removerProject, id };
   }
 
   async searchOwnProjects(searchText: string, userId: number, status: StatusProject) {
     const findProjects = await this.projectRepository.find({
-      relations: { members: true, owner: true, tasks: true },
+      relations: { members: { user: true }, owner: true, tasks: true },
       where: {
         owner: { id: userId },
         title: ILike(`%${searchText}%`),
@@ -99,9 +118,9 @@ export class ProjectService {
 
   async searchForeignProjects(searchText: string, userId: number, status: StatusProject) {
     const findProjects = await this.projectRepository.find({
-      relations: { members: true, owner: true, tasks: true },
+      relations: { members: { user: true }, owner: true, tasks: true },
       where: {
-        members: { id: userId },
+        members: { user: { id: userId } },
         title: ILike(`%${searchText}%`),
         ...(status !== StatusProject.ALL && { status }),
       },
@@ -147,7 +166,6 @@ export class ProjectService {
   }
 
   async geOwnProjectCountsByStatus(userId: number) {
-    
     const result = await this.projectRepository
       .createQueryBuilder('project')
       .select('COUNT(*)', 'totalCount')
@@ -169,7 +187,7 @@ export class ProjectService {
 
   /* find Foreign projects */
 
-  async getForeignProjects(userId: number, status: StatusProject, page: number, pageSize: number) {
+  async getForeignProjects(memberId: number, status: StatusProject, page: number, pageSize: number) {
     const skip = (page - 1) * pageSize;
 
     const findProjects = await this.projectRepository.find({
@@ -180,8 +198,9 @@ export class ProjectService {
       },
       where: {
         members: {
-          id: userId,
+          user: { id: memberId },
         },
+
         ...(status !== StatusProject.ALL && { status }),
       },
       order: {
@@ -190,6 +209,7 @@ export class ProjectService {
       skip,
       take: pageSize,
     });
+
     return mapToProjects(findProjects);
   }
 
@@ -201,14 +221,15 @@ export class ProjectService {
       .addSelect('SUM(CASE WHEN project.status = :progress THEN 1 ELSE 0 END)', 'in-progress')
       .addSelect('SUM(CASE WHEN project.status = :suspend THEN 1 ELSE 0 END)', 'suspend')
       .leftJoin('project.members', 'members')
-      .where('members.id = :userId', { userId })
-      .groupBy('members.id')
+      .where('members.user.id = :userId', { userId })
+      .groupBy('members.user.id')
       .setParameters({
         completed: 'completed',
         progress: 'in-progress',
         suspend: 'suspend',
       })
       .getRawMany();
+
     return result;
   }
 

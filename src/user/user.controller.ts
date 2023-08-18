@@ -27,21 +27,19 @@ export class UserController {
     return this.userService.uploadAvatar(req.user.sub, file);
   }
 
-  @UseGuards(AccessTokenGuard)
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
-  }
-
   @Get('get-user')
   @UseGuards(AccessTokenGuard)
   getUser(@Req() req) {
     return this.userService.getUser(req.user.email);
   }
 
-  @Patch('update/member-role/:id')
+  @Patch('update-project/:projectId/member/:memberId')
   @UseGuards(AccessTokenGuard)
-  async setMemberRole(@Param('id') id: string, @Body() updateMemberRole: { memberRole: MemberRole }) {
-    await this.userService.setMemberRole(+id, updateMemberRole.memberRole);
+  async setMemberRole(
+    @Param('projectId') projectId: string,
+    @Param('memberId') memberId: string,
+    @Body() updateMemberRole: { memberRole: MemberRole },
+  ) {
+    await this.userService.setMemberRole(+projectId, +memberId, updateMemberRole.memberRole);
   }
 }

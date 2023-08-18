@@ -71,6 +71,17 @@ export class UserService {
     });
   }
 
+  async findOneUserForCheckRole(userId: number, projectId: number) {
+    return await this.userRepository.findOne({
+      relations: {
+        member: {
+          project: true,
+        },
+      },
+      where: { id: userId, member: { project: { id: projectId } } },
+    });
+  }
+
   async findOneByEmail(email: string) {
     return await this.userRepository.findOne({
       relations: {
@@ -110,15 +121,22 @@ export class UserService {
     return mapToUserProfile(user);
   }
 
-  async removeMembers(membersIds: number[]) {
-    await this.memberRepository.delete({ user: { id: In(membersIds) } });
+  async getOneMember(projectId: number, memberId: number) {
+    return await this.memberRepository.findOne({
+      where: {
+        project: { id: projectId },
+        user: { id: memberId },
+      },
+    });
   }
 
-  async setMemberRole(memberId: number, memberRole: MemberRole) {
-    const member = await this.memberRepository.findOne({ where: { user: { id: memberId } } });
+  async removeMembers(membersIds: number[], projectId: number) {
+    await this.memberRepository.delete({ user: { id: In(membersIds) }, project: { id: projectId } });
+  }
 
+  async setMemberRole(projectId: number, memberId: number, memberRole: MemberRole) {
+    const member = await this.getOneMember(projectId, memberId);
     member.role = memberRole;
-
     await this.memberRepository.save(member);
   }
 }

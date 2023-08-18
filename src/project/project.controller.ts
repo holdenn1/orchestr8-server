@@ -71,8 +71,8 @@ export class ProjectController {
 
   @Delete(':id')
   @UseGuards(AccessTokenGuard)
-  async remove(@Param('id') id: string, @Headers('socketId') socketId: string) {
-    const removedProject = await this.projectService.remove(+id);
+  async remove(@Req() req, @Param('id') id: string, @Headers('socketId') socketId: string) {
+    const removedProject = await this.projectService.removeProject(+id, +req.user.sub);
     this.socketGateway.emitToAll(NotificationType.REMOVE_PROJECT, {
       payload: removedProject,
       socketId,
@@ -108,7 +108,7 @@ export class ProjectController {
     return this.projectService.geOwnProjectCountsByStatus(req.user.sub);
   }
 
-  @Get('foreign-project-count')
+  @Get('foreign/project/count')
   @UseGuards(AccessTokenGuard)
   async geForeignProjectCountsByStatus(@Req() req) {
     return this.projectService.geForeignProjectCountsByStatus(req.user.sub);
@@ -139,5 +139,4 @@ export class ProjectController {
   searchUsers(@Query('searchText') searchText: string, @Req() req) {
     return this.projectService.searchUsers(searchText, req.user.sub);
   }
-
 }

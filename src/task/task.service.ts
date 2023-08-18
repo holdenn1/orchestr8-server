@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { ForbiddenException } from '@nestjs/common/exceptions';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './entities/task.entity';
 import { Repository } from 'typeorm';
@@ -7,6 +8,8 @@ import { ProjectService } from 'src/project/project.service';
 import { mapTaskToProfile, mapTasksToProfile } from './mapers';
 import { StatusTask } from './types';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { UserService } from 'src/user/user.service';
+import { MemberRole } from 'src/user/types/enum.user-role';
 
 @Injectable()
 export class TaskService {
@@ -14,16 +17,26 @@ export class TaskService {
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
     private projectService: ProjectService,
+    private userService: UserService,
   ) {}
 
-  async create(projectId: number, { task }: CreateTaskDto) {
+  async create(userId: number, projectId: number, { task }: CreateTaskDto) {
     const project = await this.projectService.findOneById(projectId);
-    if (project) {
-      const createdTask = await this.taskRepository.save({
-        task,
-        project,
-      });
-      return mapTaskToProfile(createdTask);
+    const user = await this.userService.findOneUserForCheckRole(userId, projectId);
+
+    if (
+      project.owner.id === userId ||
+      user?.member.some((member) => member.role === MemberRole.PROJECT_MANAGER)
+    ) {
+      if (project) {
+        const createdTask = await this.taskRepository.save({
+          task,
+          project,
+        });
+        return mapTaskToProfile(createdTask);
+      }
+    } else {
+      throw new ForbiddenException();
     }
   }
 
@@ -74,20 +87,45 @@ export class TaskService {
     });
   }
 
-  async updateTask(id: number, dto: Partial<UpdateTaskDto>) {
-    const task = await this.findOneById(id);
-    task.task = dto.task ?? task.task;
-    task.completed = dto.completed ?? task.completed;
-    return this.taskRepository.save({ ...task });
+  async updateTask(userId: number, projectId: number, taskId: number, dto: Partial<UpdateTaskDto>) {
+    console.log(projectId);
+
+    const project = await this.projectService.findOneById(projectId);
+    console.log(project);
+
+    const user = await this.userService.findOneUserForCheckRole(userId, projectId);
+
+    if (
+      project.owner.id === userId ||
+      user?.member.some((member) => member.role === MemberRole.PROJECT_MANAGER)
+    ) {
+      const task = await this.findOneById(taskId);
+      task.task = dto.task ?? task.task;
+      task.completed = dto.completed ?? task.completed;
+      return this.taskRepository.save({ ...task });
+    } else {
+      throw new ForbiddenException();
+    }
   }
 
-  async remove(id: number) {
-    const task = await this.findOneById(id);
-    const removedTask = await this.taskRepository.remove(task);
-    if (!removedTask) {
-      throw new NotFoundException(`Project with ID ${id} not found`);
+  async remove(userId: number, projectId: number, taskId: number) {
+    const project = await this.projectService.findOneById(projectId);
+
+    const user = await this.userService.findOneUserForCheckRole(userId, projectId);
+
+    if (
+      project.owner.id === userId ||
+      user?.member.some((member) => member.role === MemberRole.PROJECT_MANAGER)
+    ) {
+      const task = await this.findOneById(taskId);
+      const removedTask = await this.taskRepository.remove(task);
+      if (!removedTask) {
+        throw new NotFoundException(`Project with ID ${taskId} not found`);
+      }
+      return { ...removedTask, taskId };
+    } else {
+      throw new ForbiddenException();
     }
-    return { ...removedTask, id };
   }
 
   async getTasksCountsByStatus(projectId: number) {
