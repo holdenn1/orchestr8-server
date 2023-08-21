@@ -123,6 +123,7 @@ export class UserService {
 
   async getOneMember(projectId: number, memberId: number) {
     return await this.memberRepository.findOne({
+      relations: { project: true, user: true },
       where: {
         project: { id: projectId },
         user: { id: memberId },
@@ -137,6 +138,12 @@ export class UserService {
   async setMemberRole(projectId: number, memberId: number, memberRole: MemberRole) {
     const member = await this.getOneMember(projectId, memberId);
     member.role = memberRole;
-    await this.memberRepository.save(member);
+    const updatedMember = await this.memberRepository.save(member);
+    const memberRoleToProfile = {
+      projectId: updatedMember.project.id,
+      memberId: updatedMember.user.id,
+      memberRole: updatedMember.role,
+    };
+    return memberRoleToProfile;
   }
 }

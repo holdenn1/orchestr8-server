@@ -6,4 +6,5 @@ export enum NotificationType {
   ADD_TASK = 'add_task',
   REMOVE_TASK = 'remove_task',
   UPDATE_TASK = 'update_task',
+  UPDATE_MEMBER_ROLE = 'update_member_role',
 }

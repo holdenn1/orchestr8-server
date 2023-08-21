@@ -22,11 +22,11 @@ import { SocketGateway } from 'src/socket/socket.gateway';
 import { NotificationType } from 'src/socket/types';
 
 @Controller('task')
+@UseGuards(AccessTokenGuard)
 export class TaskController {
   constructor(private readonly taskService: TaskService, private readonly socketGateway: SocketGateway) {}
 
   @Post('create/:projectId')
-  @UseGuards(AccessTokenGuard)
   @UsePipes(new ValidationPipe())
   async create(
     @Req() req,
@@ -43,7 +43,6 @@ export class TaskController {
   }
 
   @Get('/:projectId/:status')
-  @UseGuards(AccessTokenGuard)
   getTasks(
     @Param('projectId') projectId: string,
     @Param('status') status: StatusTask,
@@ -54,7 +53,6 @@ export class TaskController {
   }
 
   @Patch('update-task-project/:projectId/:taskId')
-  @UseGuards(AccessTokenGuard)
   async update(
     @Req() req,
     @Param('projectId') projectId: string,
@@ -72,7 +70,6 @@ export class TaskController {
   }
 
   @Delete('remove/task/:taskId/:projectId')
-  @UseGuards(AccessTokenGuard)
   async remove(
     @Req() req,
     @Param('taskId') taskId: string,
@@ -88,7 +85,6 @@ export class TaskController {
   }
 
   @Get('tasks/count/:projectId')
-  @UseGuards(AccessTokenGuard)
   getTasksCountsByStatus(@Param('projectId') projectId: string) {
     return this.taskService.getTasksCountsByStatus(+projectId);
   }

@@ -21,6 +21,7 @@ import { StatusProject } from './types';
 import { SocketGateway } from 'src/socket/socket.gateway';
 import { NotificationType } from 'src/socket/types';
 @Controller('project')
+@UseGuards(AccessTokenGuard)
 export class ProjectController {
   constructor(
     private readonly projectService: ProjectService,
@@ -28,7 +29,6 @@ export class ProjectController {
   ) {}
 
   @Post('create')
-  @UseGuards(AccessTokenGuard)
   @UsePipes(new ValidationPipe())
   async create(
     @Body() createProjectDto: CreateProjectDto,
@@ -41,7 +41,6 @@ export class ProjectController {
   }
 
   @Patch(':id')
-  @UseGuards(AccessTokenGuard)
   async updateProject(
     @Req() req,
     @Param('id') id: string,
@@ -54,7 +53,6 @@ export class ProjectController {
   }
 
   @Patch('update-status-proj/:id')
-  @UseGuards(AccessTokenGuard)
   async updateProjectStatus(
     @Req() req,
     @Param('id') id: string,
@@ -70,7 +68,6 @@ export class ProjectController {
   }
 
   @Delete(':id')
-  @UseGuards(AccessTokenGuard)
   async remove(@Req() req, @Param('id') id: string, @Headers('socketId') socketId: string) {
     const removedProject = await this.projectService.removeProject(+id, +req.user.sub);
     this.socketGateway.emitToAll(NotificationType.REMOVE_PROJECT, {
@@ -81,7 +78,6 @@ export class ProjectController {
   }
 
   @Get('own-projects/:status')
-  @UseGuards(AccessTokenGuard)
   getOwnProjects(
     @Req() req,
     @Param('status') status: StatusProject,
@@ -92,7 +88,6 @@ export class ProjectController {
   }
 
   @Get('foreign-projects/:status')
-  @UseGuards(AccessTokenGuard)
   getForeignProjects(
     @Req() req,
     @Param('status') status: StatusProject,
@@ -103,19 +98,16 @@ export class ProjectController {
   }
 
   @Get('own-project-count')
-  @UseGuards(AccessTokenGuard)
   async geOwnProjectCountsByStatus(@Req() req) {
     return this.projectService.geOwnProjectCountsByStatus(req.user.sub);
   }
 
   @Get('foreign/project/count')
-  @UseGuards(AccessTokenGuard)
   async geForeignProjectCountsByStatus(@Req() req) {
     return this.projectService.geForeignProjectCountsByStatus(req.user.sub);
   }
 
   @Get('search-own-projects/:status')
-  @UseGuards(AccessTokenGuard)
   searchOwnProjects(
     @Param('status') status: StatusProject,
     @Query('searchText') searchText: string,
@@ -125,7 +117,6 @@ export class ProjectController {
   }
 
   @Get('search-foreign-projects/:status')
-  @UseGuards(AccessTokenGuard)
   searchForeignProjects(
     @Param('status') status: StatusProject,
     @Query('searchText') searchText: string,
@@ -135,7 +126,6 @@ export class ProjectController {
   }
 
   @Get('users')
-  @UseGuards(AccessTokenGuard)
   searchUsers(@Query('searchText') searchText: string, @Req() req) {
     return this.projectService.searchUsers(searchText, req.user.sub);
   }

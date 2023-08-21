@@ -122,7 +122,7 @@ export class TaskService {
       if (!removedTask) {
         throw new NotFoundException(`Project with ID ${taskId} not found`);
       }
-      return { ...removedTask, taskId };
+      return { ...removedTask, id: taskId };
     } else {
       throw new ForbiddenException();
     }
