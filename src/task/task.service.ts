@@ -88,10 +88,7 @@ export class TaskService {
   }
 
   async updateTask(userId: number, projectId: number, taskId: number, dto: Partial<UpdateTaskDto>) {
-    console.log(projectId);
-
     const project = await this.projectService.findOneById(projectId);
-    console.log(project);
 
     const user = await this.userService.findOneUserForCheckRole(userId, projectId);
 
