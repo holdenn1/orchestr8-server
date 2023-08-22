@@ -24,4 +24,4 @@
 <p>3. Run the project</p>
 <code>npm run start</code>
 <p>4. Navigate to <a href="http://localhost:7000/">http://localhost:7000/</a> in the browser</p>
-<h2>To view hosted application navigate to the <a href=""></a> in the browser</h2>
+<h2>To view hosted application navigate to the <a href="https://holdenn1.github.io/orchestr8-client/">https://holdenn1.github.io/orchestr8-client/</a> in the browser</h2>
